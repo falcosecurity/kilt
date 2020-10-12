@@ -20,7 +20,6 @@ func extractRuntime(config *configuration.Config) (*kilt.Runtime, error) {
 				newUpload := new(kilt.RuntimeUpload)
 
 				newUpload.Payload, err = retrievePayload(upload)
-
 				if err != nil {
 					return nil, fmt.Errorf("could not extract payload for entry %d: %w", k, err)
 				}

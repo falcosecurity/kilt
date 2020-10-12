@@ -1,0 +1,23 @@
+name: Kilt Lib Tests On PR
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - name: Test
+        run: |
+          cd pkg
+          go test -v ./...

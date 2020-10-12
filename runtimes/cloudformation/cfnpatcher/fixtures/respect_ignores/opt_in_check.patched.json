@@ -1,0 +1,54 @@
+{
+  "Resources": {
+    "willpatch": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Command": [
+              "/bin/sh"
+            ],
+            "EntryPoint": [
+              "/kilt/run",
+              "--",
+              ""
+            ],
+            "Image": "busybox",
+            "Name": "app",
+            "LinuxParameters": {
+              "Capabilities": {
+                "Add": ["SYS_PTRACE"]
+              }
+            },
+            "VolumesFrom": [
+              {
+                "ReadOnly": true,
+                "SourceContainer": "KiltImage"
+              }
+            ]
+          },
+          {
+            "EntryPoint": [
+              "/kilt/wait"
+            ],
+            "Image": "KILT:latest",
+            "Name": "KiltImage"
+          }
+        ],
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Tags": [
+          {
+            "Key": "kiltinclude",
+            "Value": "whatever"
+          },
+          {
+            "Key": "sometag",
+            "Value": "antani"
+          }
+        ]
+      },
+      "Type": "AWS::ECS::TaskDefinition"
+    }
+  }
+}

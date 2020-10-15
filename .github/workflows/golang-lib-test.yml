@@ -1,11 +1,11 @@
-name: Kilt Lib Tests On PR
+name: Kilt Lib
 
 on:
   pull_request:
     branches: [ master ]
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
 
     steps:

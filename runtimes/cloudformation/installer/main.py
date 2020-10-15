@@ -31,9 +31,10 @@ class CallbackProgress:
 @click.argument('path_to_kilt_definition', type=click.Path(exists=True))
 @click.option('--region', '-r', help="override aws region")
 @click.option('--opt-in/--opt-out', is_flag=True, help="Use opt-in mechanism instead of the default opt out")
-@click.option('--s3-arn', help="Use a different bucket instead of the default one (kilt-${account_id}-${region})")
 @click.option('--kilt-zip-name', default="kilt.zip", help="[Optional] Name of the file for the lambda code")
-def main(macro_name, path_to_kilt_definition, region, opt_in, s3_arn, kilt_zip_name):
+@click.option('--kms-secret', default="",
+              help="[Optional] ARN of the secret containing credentials for the image repository")
+def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms_secret):
     click.echo("Getting AWS account and region...", nl=False)
     aws_account = boto3.client('sts').get_caller_identity().get('Account')
     aws_region = boto3.session.Session().region_name
@@ -57,6 +58,8 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, s3_arn, kilt_zip_n
         macro_name=macro_name,
         bucket_name=s3_bucket.name,
         kilt_zip_name=kilt_zip_name,
+        kilt_opt_in=opt_in,
+        kilt_kms_secret=kms_secret
     )
     cf = boto3.resource('cloudformation', region_name=aws_region)
     stack_name = f'KiltMacro{macro_name}'

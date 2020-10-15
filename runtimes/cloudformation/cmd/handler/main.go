@@ -50,6 +50,7 @@ func ConfigClosure() interface{} {
 	definition := os.Getenv("KILT_DEFINITION")
 	definitionType := os.Getenv("KILT_DEFINITION_TYPE")
 	optIn := os.Getenv("KILT_OPT_IN")
+	imageAuth := os.Getenv("KILT_IMAGE_AUTH_SECRET")
 	var fullDefinition string
 	switch definitionType {
 	case config.S3:
@@ -68,6 +69,7 @@ func ConfigClosure() interface{} {
 
 	configuration := &cfnpatcher.Configuration{
 		Kilt:  fullDefinition,
+		ImageAuthSecret: imageAuth,
 		OptIn: optIn != "",
 	}
 

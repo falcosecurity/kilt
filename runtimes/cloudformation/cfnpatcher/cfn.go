@@ -8,6 +8,7 @@ import (
 
 type Configuration struct {
 	Kilt string
+	ImageAuthSecret string
 	OptIn bool
 }
 

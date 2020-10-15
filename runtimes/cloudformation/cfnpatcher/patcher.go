@@ -37,7 +37,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 				containers[appendResource.Name] = &appendResource
 			}
 		}
-		err := appendContainers(resource, containers)
+		err := appendContainers(resource, containers, configuration.ImageAuthSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -127,13 +127,19 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	return nil
 }
 
-func appendContainers(resource *gabs.Container, containers map[string]*kilt.BuildResource) error {
+func appendContainers(resource *gabs.Container, containers map[string]*kilt.BuildResource, imageAuth string) error {
 	for _, inject := range containers {
-		_, err := resource.Set(map[string]interface{}{
+		appended := map[string]interface{}{
 			"Name": inject.Name,
 			"Image": inject.Image,
 			"EntryPoint": inject.EntryPoint,
-		}, "Properties", "ContainerDefinitions", "-")
+		}
+		if len(imageAuth) > 0 {
+			appended["RepositoryCredentials"] = map[string]interface{}{
+				"CredentialsParameter": imageAuth,
+			}
+		}
+		_, err := resource.Set(appended, "Properties", "ContainerDefinitions", "-")
 		if err != nil {
 			return fmt.Errorf("could not inject %s: %w", inject.Name, err)
 		}

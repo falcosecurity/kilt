@@ -1,11 +1,18 @@
 import click
 import boto3
 import threading
+import sys
 from os import path
 from jinja2 import Environment, FileSystemLoader
 
-KILT_CFN = path.join(path.dirname(__file__), 'kilt.yaml')
-KILT_ZIP = path.join(path.dirname(__file__), 'kilt.zip')
+
+bundle_dir = path.dirname(__file__)
+# If inside pyinstaller we use temp dir as bundle dir
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    bundle_dir = getattr(sys, '_MEIPASS', path.abspath(path.dirname(__file__)))
+
+KILT_CFN = path.join(bundle_dir, 'kilt.yaml')
+KILT_ZIP = path.join(bundle_dir, 'kilt.zip')
 
 assert path.exists(KILT_CFN), 'Could not find cloudformation jinja template'
 assert path.exists(KILT_ZIP), 'Could not find kilt.zip - did you build it?'
@@ -34,7 +41,9 @@ class CallbackProgress:
 @click.option('--kilt-zip-name', default="kilt.zip", help="[Optional] Name of the file for the lambda code")
 @click.option('--kms-secret', default="",
               help="[Optional] ARN of the secret containing credentials for the image repository")
-def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms_secret):
+@click.option('--kilt-zip', default=KILT_ZIP, help='Deploy custom lambda instead of bundled lambda')
+@click.option('--kilt-template', default=KILT_CFN, help='Use custom CFN template instead of bundled one')
+def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms_secret, kilt_zip, kilt_template):
     click.echo("Getting AWS account and region...", nl=False)
     aws_account = boto3.client('sts').get_caller_identity().get('Account')
     aws_region = boto3.session.Session().region_name
@@ -44,8 +53,8 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms
     click.echo("Getting S3 bucket...", nl=False)
     s3_bucket = get_s3_bucket(aws_account, aws_region)
     click.echo(click.style(s3_bucket.name, fg='green'))
-    pb = CallbackProgress(KILT_ZIP, "Uploading Macro")
-    s3_bucket.upload_file(KILT_ZIP, kilt_zip_name, Callback=pb)
+    pb = CallbackProgress(kilt_zip, "Uploading Macro")
+    s3_bucket.upload_file(kilt_zip, kilt_zip_name, Callback=pb)
     pb.done()
     pb = CallbackProgress(path_to_kilt_definition, f"Uploading Kilt - {macro_name}")
     s3_bucket.upload_file(path_to_kilt_definition, f'{macro_name}.kilt.cfg', Callback=pb)
@@ -53,7 +62,7 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms
     env = Environment(
         loader=FileSystemLoader(searchpath=path.dirname(__file__))
     )
-    template = env.get_template('kilt.yaml')
+    template = env.get_template(kilt_template)
     output_text = template.render(
         macro_name=macro_name,
         bucket_name=s3_bucket.name,

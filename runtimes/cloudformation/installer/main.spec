@@ -1,12 +1,17 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 
 block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/home/admiral0/projects/falcosecurity/evolution/integrations/kilt/flavour/cloudformation/installer'],
+             pathex=[os.getcwd()],
              binaries=[],
-             datas=[],
+             datas=[
+                 ('../kilt.zip', '.'),
+                 ('./kilt.yaml', '.'),
+
+             ],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -23,11 +28,11 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='main',
+          name='kilt-installer',
           debug=False,
           bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
+          strip=True,
+          upx=False,
           upx_exclude=[],
           runtime_tmpdir=None,
           console=True )

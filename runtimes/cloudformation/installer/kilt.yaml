@@ -40,7 +40,7 @@ Resources:
           {% if kilt_opt_in %}
           KILT_OPT_IN: "YES"
           {% endif %}
-          KILT_IMAGE_AUTH_SECRET: {{ kms_secret }}
+          KILT_IMAGE_AUTH_SECRET: "{{ kms_secret }}"
       Code:
         S3Bucket: {{ bucket_name }}
         S3Key: {{ kilt_zip_name }}

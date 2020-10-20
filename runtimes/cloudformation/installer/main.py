@@ -60,9 +60,9 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms
     s3_bucket.upload_file(path_to_kilt_definition, f'{macro_name}.kilt.cfg', Callback=pb)
     pb.done()
     env = Environment(
-        loader=FileSystemLoader(searchpath=path.dirname(__file__))
+        loader=FileSystemLoader(searchpath=path.dirname(kilt_template))
     )
-    template = env.get_template(kilt_template)
+    template = env.get_template(path.basename(kilt_template))
     output_text = template.render(
         macro_name=macro_name,
         bucket_name=s3_bucket.name,

@@ -1,1 +1,4 @@
 .idea/
+/utilities/launcher/launcher
+/utilities/logshipper/logshipper
+/utilities/waitforever/waitforever

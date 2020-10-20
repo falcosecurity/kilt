@@ -1,0 +1,1 @@
+This directory contains several utilities that can be used to generate an image with static binaries

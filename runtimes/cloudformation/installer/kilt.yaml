@@ -24,6 +24,9 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: '*'
+              - Effect: Allow
+                Action: "s3:*"
+                Resource: "arn:aws:s3:::{{ bucket_name }}/*"
   KiltLambda{{ macro_name }}:
     Type: AWS::Lambda::Function
     Properties:

@@ -1,0 +1,21 @@
+build {
+    entry_point: ["/kilt/launcher", "/vendor/falco/bin/pdig"] ${?original.entry_point} ${?original.command} ["--"]
+    command: ["/vendor/falco/bin/falco", "-u", "-c", "/vendor/falco/falco.yaml", "--alternate-lua-dir","/vendor/falco/share/lua"]
+    environment_variables: {
+        "__CW_LOG_GROUP": "FalcoAlerts"
+    }
+    mount: [
+        {
+            name: "Falco"
+            image: "docker.pkg.github.com/falcosecurity/kilt/falco:latest"
+            volumes: ["/vendor/falco"]
+            entry_point: ["/vendor/falco/bin/waitforever"]
+        },
+        {
+            name: "KiltUtilities"
+            image: "docker.pkg.github.com/falcosecurity/kilt/utilities:latest"
+            volumes: ["/kilt"]
+            entry_point: ["/kilt/waitforever"]
+        }
+    ]
+}

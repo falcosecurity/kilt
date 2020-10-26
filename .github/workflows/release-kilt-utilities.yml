@@ -1,13 +1,13 @@
-name: Release Kilt Runtimes
+name: Rolling Release of Docker Images
 
 on:
   push:
     branches: [ master ]
 
 jobs:
-  build-utilities:
+  release-utilities:
     runs-on: ubuntu-latest
-    name: Create and push docker image of utilities to GitHub Packages
+    name: Kilt Utilities Image
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -27,9 +27,8 @@ jobs:
       - name: Login to GitHub Packages
         uses: docker/login-action@v1
         with:
-          registry: docker.pkg.github.com
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_SECRET }}
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -37,4 +36,29 @@ jobs:
           file: ./utilities/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: docker.pkg.github.com/falcosecurity/kilt/utilities:latest
+          tags: falcosecurity/kilt-utilities:latest
+  release-falco-userspace:
+    runs-on: ubuntu-latest
+    name: Falco Userspace Image
+    needs:
+      - release-utilities
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_SECRET }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./definitions/falco/
+          file: ./definitions/falco/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: falcosecurity/falco-userspace:latest

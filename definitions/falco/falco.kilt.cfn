@@ -7,13 +7,13 @@ build {
     mount: [
         {
             name: "Falco"
-            image: "docker.pkg.github.com/falcosecurity/kilt/falco:latest"
+            image: "falcosecurity/falco-userspace:latest"
             volumes: ["/vendor/falco"]
             entry_point: ["/vendor/falco/bin/waitforever"]
         },
         {
             name: "KiltUtilities"
-            image: "docker.pkg.github.com/falcosecurity/kilt/utilities:latest"
+            image: "falcosecurity/kilt-utilities:latest"
             volumes: ["/kilt"]
             entry_point: ["/kilt/waitforever"]
         }

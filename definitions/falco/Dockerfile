@@ -1,5 +1,5 @@
 FROM falcosecurity/falco:latest-slim AS falco
-FROM docker.pkg.github.com/falcosecurity/kilt/utilities:latest AS kilt-utils
+FROM falcosecurity/kilt-utilities AS kilt-utils
 FROM alpine:latest AS pdig-build
 
 # Build Pdig

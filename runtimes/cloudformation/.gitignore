@@ -1,2 +1,3 @@
 /kilt.zip
 /cmd/handler/handler
+/cmd/cfn-apply-kilt/cfn-apply-kilt

@@ -15,7 +15,7 @@ const KiltImageName = "KiltImage"
 func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration) (*gabs.Container, error) {
 	l := log.Ctx(ctx)
 	successes := 0
-	containers := make(map[string]*kilt.BuildResource)
+	containers := make(map[string]kilt.BuildResource)
 	k := kiltapi.NewKiltFromHocon(configuration.Kilt)
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
@@ -34,7 +34,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 			}
 
 			for _, appendResource := range patch.Resources {
-				containers[appendResource.Name] = &appendResource
+				containers[appendResource.Name] = appendResource
 			}
 		}
 		err := appendContainers(resource, containers, configuration.ImageAuthSecret)
@@ -127,7 +127,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	return nil
 }
 
-func appendContainers(resource *gabs.Container, containers map[string]*kilt.BuildResource, imageAuth string) error {
+func appendContainers(resource *gabs.Container, containers map[string]kilt.BuildResource, imageAuth string) error {
 	for _, inject := range containers {
 		appended := map[string]interface{}{
 			"Name": inject.Name,

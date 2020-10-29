@@ -81,7 +81,7 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms
         ]
     )
     click.echo(click.style("SUBMITTED", fg="yellow"))
-    click.echo(f"Check your cloudwatch console for stack {stack_name}")
+    click.echo(f"Check your CloudFormation console for stack {stack_name}")
 
 
 def get_s3_bucket(aws_account, aws_region):

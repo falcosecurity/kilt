@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Jeffail/gabs/v2"
 	"github.com/rs/zerolog/log"
+	"strings"
 )
 
 type Configuration struct {
@@ -12,16 +13,42 @@ type Configuration struct {
 	OptIn bool
 }
 
-const KiltIgnoreTag = "kiltignore"
-const KiltIncludeTag = "kiltinclude"
+type InstrumentationHints struct {
+	IgnoreContainersNamed []string
+	IncludeContainersNamed []string
+	HasGlobalInclude bool
+}
+
+const KiltIgnoreTag = "kilt-ignore"
+const KiltIncludeTag = "kilt-include"
+const KiltIgnoreContainersTag = "kilt-ignore-containers"
+const KiltIncludeContainersTag = "kilt-include-containers"
 
 
-func isIgnored(resource *gabs.Container, isOptIn bool) bool{
-	tags := getTags(resource)
+func isIgnored(tags map[string]string, isOptIn bool) bool{
 	_, included := tags[KiltIncludeTag]
 	_, ignored := tags[KiltIgnoreTag]
+	_, hasNamedContainerIncluded := tags[KiltIncludeContainersTag]
 
-	return !((isOptIn && included) || (!isOptIn && !ignored))
+	return !((isOptIn && (included || hasNamedContainerIncluded)) || (!isOptIn && !ignored))
+}
+
+func extractContainersFromTag(tags map[string]string, tag string) []string {
+	containers := make([]string, 0)
+	containerList, hasIgnores := tags[tag]
+	if hasIgnores {
+		containers = strings.Split(containerList, ",")
+	}
+	return containers
+}
+
+func extractHintsFromTags(tags map[string]string) *InstrumentationHints {
+	_, included := tags[KiltIncludeTag]
+	return &InstrumentationHints{
+		IgnoreContainersNamed: extractContainersFromTag(tags, KiltIgnoreContainersTag),
+		IncludeContainersNamed: extractContainersFromTag(tags, KiltIncludeContainersTag),
+		HasGlobalInclude: included,
+	}
 }
 
 func Patch(ctx context.Context, configuration *Configuration , fragment []byte) ([]byte, error) {
@@ -34,7 +61,9 @@ func Patch(ctx context.Context, configuration *Configuration , fragment []byte) 
 
 	for name, resource := range template.S("Resources").ChildrenMap() {
 		if matchFargate(resource) {
-			if isIgnored(resource, configuration.OptIn) {
+			tags := getTags(resource)
+
+			if isIgnored(tags, configuration.OptIn) {
 				l.Info().Str("resource", name).Msg("ignored resource due to tag")
 				continue
 			}
@@ -43,8 +72,8 @@ func Patch(ctx context.Context, configuration *Configuration , fragment []byte) 
 				l.Error().Err(err).Str("resource", name).Msg("could not generate kilt instructions")
 				continue
 			}
-
-			_, err = applyTaskDefinitionPatch(ctx, name, resource, configuration)
+			hints := extractHintsFromTags(tags)
+			_, err = applyTaskDefinitionPatch(ctx, name, resource, configuration, hints)
 			if err != nil {
 				l.Error().Err(err).Str("resource", name).Msgf("could not patch resource")
 			}

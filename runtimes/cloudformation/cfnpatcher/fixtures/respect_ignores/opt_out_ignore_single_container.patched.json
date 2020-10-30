@@ -13,18 +13,27 @@
               ""
             ],
             "Image": "busybox",
-            "Name": "app",
             "LinuxParameters": {
               "Capabilities": {
-                "Add": ["SYS_PTRACE"]
+                "Add": [
+                  "SYS_PTRACE"
+                ]
               }
             },
+            "Name": "app",
             "VolumesFrom": [
               {
                 "ReadOnly": true,
                 "SourceContainer": "KiltImage"
               }
             ]
+          },
+          {
+            "EntryPoint": [
+              "/bin/sh"
+            ],
+            "Image": "busybox",
+            "Name": "nopatch"
           },
           {
             "EntryPoint": [
@@ -43,8 +52,8 @@
             "Value": "sbiribuda"
           },
           {
-            "Key": "kilt-include",
-            "Value": "itisignored"
+            "Key": "kilt-ignore-containers",
+            "Value": "nopatch"
           }
         ]
       },

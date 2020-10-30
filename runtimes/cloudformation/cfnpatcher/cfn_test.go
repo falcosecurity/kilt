@@ -17,11 +17,13 @@ import (
 var optInTests = [...]string{
 	"respect_ignores/opt_in_check",
 	"respect_ignores/opt_in_ignored",
+	"respect_ignores/opt_in_single_container",
 }
 
 var defaultTests = [...]string{
 	"respect_ignores/opt_out_default",
 	"respect_ignores/opt_out_ignored",
+	"respect_ignores/opt_out_ignore_single_container",
 
 	"patching/entrypoint",
 	"patching/command",

@@ -12,11 +12,11 @@
             "Value": "sbiribuda"
           },
           {
-            "Key": "kiltexclude",
+            "Key": "kilt-exclude",
             "Value": "itisignored"
           },
           {
-            "Key": "kiltignore",
+            "Key": "kilt-ignore",
             "Value": "ignoretagisignored"
           }
         ],

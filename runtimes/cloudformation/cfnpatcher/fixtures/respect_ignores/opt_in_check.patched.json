@@ -39,7 +39,7 @@
         ],
         "Tags": [
           {
-            "Key": "kiltinclude",
+            "Key": "kilt-include",
             "Value": "whatever"
           },
           {

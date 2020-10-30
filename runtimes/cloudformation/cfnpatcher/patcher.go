@@ -10,9 +10,23 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const KiltImageName = "KiltImage"
+func containerInConfig(name string, listOfNames []string) bool {
+	for _, n := range listOfNames {
+		if n == name {
+			return true
+		}
+	}
+	return false
+}
 
-func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration) (*gabs.Container, error) {
+func shouldSkip(info *kilt.TargetInfo, configuration *Configuration, hints *InstrumentationHints) bool{
+	isForceIncluded := containerInConfig(info.ContainerName, hints.IncludeContainersNamed)
+	isExcluded := containerInConfig(info.ContainerName, hints.IgnoreContainersNamed)
+
+	return (configuration.OptIn && !isForceIncluded && !hints.HasGlobalInclude) || (!configuration.OptIn && isExcluded)
+}
+
+func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration, hints *InstrumentationHints) (*gabs.Container, error) {
 	l := log.Ctx(ctx)
 	successes := 0
 	containers := make(map[string]kilt.BuildResource)
@@ -21,6 +35,10 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(resource, name, container)
 			l.Info().Msgf("extracted info for container: %v", info)
+			if shouldSkip(info, configuration, hints) {
+				l.Info().Msgf("skipping container due to hints in tags")
+				continue
+			}
 			patch, err  := k.Build(info)
 			if err != nil {
 				return nil, fmt.Errorf("could not construct kilt patch: %w", err)
@@ -39,7 +57,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 		}
 		err := appendContainers(resource, containers, configuration.ImageAuthSecret)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not append container: %w", err)
 		}
 	}
 	if successes == 0 {
@@ -49,6 +67,8 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 }
 
 func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Container, patch *kilt.Build) error {
+	l := log.Ctx(ctx)
+
 	_, err := container.Set(patch.EntryPoint, "EntryPoint")
 	if err != nil {
 		return fmt.Errorf("could not set EntryPoint: %w", err)
@@ -70,6 +90,11 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	}
 
 	for _, newContainer := range patch.Resources {
+		// Skip containers with no volumes - just injecting sidecars
+		if len(newContainer.Volumes) == 0 {
+			l.Info().Msgf("Skipping injection of %s because it has no volumes specified", newContainer.Name)
+			continue
+		}
 		addVolume := map[string]interface{}{
 			"ReadOnly": true,
 			"SourceContainer": newContainer.Name,
@@ -90,13 +115,13 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 	for k, v := range patch.EnvironmentVariables {
-		keyval := make(map[string]string)
-		keyval["Name"] = k
-		keyval["Value"] = v
-		_, err = container.Set(keyval, "Environment", "-")
+		keyValue := make(map[string]string)
+		keyValue["Name"] = k
+		keyValue["Value"] = v
+		_, err = container.Set(keyValue, "Environment", "-")
 
 		if err != nil {
-			return fmt.Errorf("could not add environment variable %v: %w", keyval, err)
+			return fmt.Errorf("could not add environment variable %v: %w", keyValue, err)
 		}
 
 	}

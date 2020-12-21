@@ -1,4 +1,0 @@
-click
-boto3
-Jinja2
-pyinstaller

@@ -2,3 +2,7 @@
 /utilities/launcher/launcher
 /utilities/logshipper/logshipper
 /utilities/waitforever/waitforever
+/installer/artifacts
+/installer/kilt
+/installer/pkged.go
+/installer/cmd/kilt-installer/kilt-installer

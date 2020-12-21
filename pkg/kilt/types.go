@@ -16,6 +16,8 @@ type TargetInfo struct {
 	Metadata             map[string]string `json:"metadata"`
 }
 
+type RecipeConfig interface{}
+
 type BuildResource struct {
 	Name string
 	Image      string

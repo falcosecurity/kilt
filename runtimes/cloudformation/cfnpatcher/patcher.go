@@ -28,9 +28,16 @@ func shouldSkip(info *kilt.TargetInfo, configuration *Configuration, hints *Inst
 
 func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration, hints *InstrumentationHints) (*gabs.Container, error) {
 	l := log.Ctx(ctx)
+	var recipeConfig kilt.RecipeConfig
+	recipeConfig, err := gabs.ParseJSON([]byte(configuration.RecipeConfig))
+	if err != nil {
+		l.Info().Msg("could not parse additional recipe config. skipping")
+		recipeConfig = gabs.New()
+	}
+
 	successes := 0
 	containers := make(map[string]kilt.BuildResource)
-	k := kiltapi.NewKiltFromHocon(configuration.Kilt)
+	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, recipeConfig)
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(resource, name, container)

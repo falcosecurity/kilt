@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Macro kilt-{{macro_name}} deployment
+Description: Macro kilt-{{ .MacroName }} deployment
 Resources:
   KiltRole:
     Type: AWS::IAM::Role
@@ -26,8 +26,8 @@ Resources:
                 Resource: '*'
               - Effect: Allow
                 Action: "s3:*"
-                Resource: "arn:aws:s3:::{{ bucket_name }}/*"
-  KiltLambda{{ macro_name }}:
+                Resource: "arn:aws:s3:::{{ .BucketName }}/*"
+  KiltLambda{{ .MacroName }}:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: go1.x
@@ -39,21 +39,23 @@ Resources:
       Environment:
         Variables:
           KILT_DEFINITION_TYPE: s3
-          KILT_DEFINITION: "{{ bucket_name }}/{{ macro_name }}.kilt.cfg"
-          {% if kilt_opt_in %}
+          KILT_DEFINITION: "{{ .BucketName }}/{{ .MacroFileName }}"
+          {{if .OptIn -}}
           KILT_OPT_IN: "YES"
-          {% endif %}
-          KILT_IMAGE_AUTH_SECRET: "{{ kilt_kms_secret }}"
+          {{- end}}
+          {{if .KiltKmsSecret -}}
+          KILT_IMAGE_AUTH_SECRET: "{{ .KiltKmsSecret }}"
+          {{- end}}
       Code:
-        S3Bucket: {{ bucket_name }}
-        S3Key: {{ kilt_zip_name }}
+        S3Bucket: {{ .BucketName }}
+        S3Key: {{ .KiltZipPath }}
 
   KiltMacro:
     Type: AWS::CloudFormation::Macro
     Properties:
-      Name: {{ macro_name }}
-      Description: Kilt - Applies kilt patching in s3://{{bucket_name}}/{{ macro_name }}.kilt.cfg to fargate tasks
+      Name: {{ .MacroName }}
+      Description: Kilt - Applies kilt patching in s3://{{ .BucketName }}/{{ .MacroFileName }} to fargate tasks
       FunctionName:
         Fn::GetAtt:
-          - KiltLambda{{ macro_name }}
+          - KiltLambda{{ .MacroName }}
           - Arn

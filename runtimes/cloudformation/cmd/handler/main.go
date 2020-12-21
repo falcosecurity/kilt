@@ -51,6 +51,7 @@ func ConfigClosure() interface{} {
 	definitionType := os.Getenv("KILT_DEFINITION_TYPE")
 	optIn := os.Getenv("KILT_OPT_IN")
 	imageAuth := os.Getenv("KILT_IMAGE_AUTH_SECRET")
+	recipeConfig := os.Getenv("KILT_RECIPE_CONFIG")
 	var fullDefinition string
 	switch definitionType {
 	case config.S3:
@@ -71,6 +72,7 @@ func ConfigClosure() interface{} {
 		Kilt:  fullDefinition,
 		ImageAuthSecret: imageAuth,
 		OptIn: optIn != "",
+		RecipeConfig: recipeConfig,
 	}
 
 	return func(ctx context.Context, event MacroInput) (MacroOutput, error) {

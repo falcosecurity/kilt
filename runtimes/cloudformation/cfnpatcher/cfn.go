@@ -11,6 +11,7 @@ type Configuration struct {
 	Kilt string
 	ImageAuthSecret string
 	OptIn bool
+	RecipeConfig string
 }
 
 type InstrumentationHints struct {

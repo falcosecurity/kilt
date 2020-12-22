@@ -1,10 +1,8 @@
-installer: deps pkged.go
-	cd cmd/kilt-installer && go build
-	@cp cmd/kilt-installer/kilt-installer kilt
-
-pkged.go:
+installer: deps
 	go get github.com/markbates/pkger/cmd/pkger
-	pkger
+	pkger -o cmd/kilt-installer
+	cd cmd/kilt-installer && go build .
+	@cp cmd/kilt-installer/kilt-installer kilt
 
 deps: artifacts/kilt-cfn-macro.zip cmd/kilt-installer/kilt.yaml
 

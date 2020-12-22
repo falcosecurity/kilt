@@ -10,7 +10,7 @@ func NewKiltFromHocon(definition string) *kilt.Kilt {
 	return kilt.NewKilt(impl)
 }
 
-func NewKiltFromHoconWithConfig(definition string, config kilt.RecipeConfig) *kilt.Kilt {
+func NewKiltFromHoconWithConfig(definition string, config string) *kilt.Kilt {
 	impl := hocon.NewKiltHoconWithConfig(definition, config)
 	return kilt.NewKilt(impl)
 }

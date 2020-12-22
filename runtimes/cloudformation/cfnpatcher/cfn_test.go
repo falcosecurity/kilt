@@ -94,6 +94,7 @@ func TestPatchingOptIn(t *testing.T) {
 				Configuration{
 				Kilt: defaultConfig,
 				OptIn:      true,
+				RecipeConfig: "{}",
 			})
 		})
 	}
@@ -108,6 +109,7 @@ func TestPatching(t *testing.T) {
 				Configuration{
 					Kilt: defaultConfig,
 					OptIn:      false,
+					RecipeConfig: "{}",
 				})
 		})
 	}

@@ -31,7 +31,6 @@ func initializeAwsBucket(cfg aws.Config) (string, error) {
 }
 
 func registerCfnMacro() []*cli.Command {
-	pkger.Include("/cmd/kilt-installer/kilt.yaml")
 
 	cfg, err := config.LoadDefaultConfig()
 	if err != nil {
@@ -144,7 +143,7 @@ func registerCfnMacro() []*cli.Command {
 
 						bucket, err := initializeAwsBucket(cfg)
 						if err != nil {
-							return err
+							return cli.Exit("could not get aws bucket " + err.Error(), 1)
 						}
 						cfnMacro := cfnmacro.NewCfnMacroRuntime(cfg, bucket)
 

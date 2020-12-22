@@ -6,7 +6,7 @@ pkged.go:
 	go get github.com/markbates/pkger/cmd/pkger
 	pkger
 
-deps: artifacts/kilt-cfn-macro.zip runtimes/cfn-macro/kilt.yaml
+deps: artifacts/kilt-cfn-macro.zip cmd/kilt-installer/kilt.yaml
 
 artifacts/kilt-cfn-macro.zip: artifacts ../runtimes/cloudformation/kilt.zip
 	@cp ../runtimes/cloudformation/kilt.zip $@

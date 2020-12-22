@@ -20,7 +20,7 @@ build {
 
 type KiltHocon struct {
 	definition string
-	config kilt.RecipeConfig
+	config 	   string
 }
 
 type HoconProvided struct {
@@ -28,17 +28,13 @@ type HoconProvided struct {
 }
 
 func NewKiltHocon(definition string) *KiltHocon {
-	return NewKiltHoconWithConfig(definition, nil)
+	return NewKiltHoconWithConfig(definition, "{}")
 }
 
-func NewKiltHoconWithConfig(definition string, config kilt.RecipeConfig) *KiltHocon {
+func NewKiltHoconWithConfig(definition string, recipeConfig string) *KiltHocon {
 	h := new(KiltHocon)
 	h.definition = definition
-	if config == nil {
-		h.config = new(kilt.RecipeConfig)
-	}else {
-		h.config = config
-	}
+	h.config = recipeConfig
 	return h
 }
 
@@ -48,13 +44,8 @@ func (k *KiltHocon) prepareFullStringConfig(info *kilt.TargetInfo) (*configurati
 		return nil, fmt.Errorf("could not serialize info: %w", err)
 	}
 
-	extraConfig, err := json.Marshal(k.config)
-	if err != nil {
-		return nil, fmt.Errorf("could not serialize config: %w", err)
-	}
-
 	configString := "original:" + string(rawVars) + "\n" +
-		"config:" + string(extraConfig) + "\n" +
+		"config:" + k.config + "\n" +
 		defaults + k.definition
 
 	return configuration.ParseString(configString), nil

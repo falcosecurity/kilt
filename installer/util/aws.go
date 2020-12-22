@@ -12,76 +12,55 @@ import (
 
 const bucketTemplate = "kilt-{{ .AwsAccountID }}-{{ .AwsRegionName }}"
 
-type AwsUtil struct {
-	config aws.Config
 
-	AwsAccountID string
-	AwsRegionName string
-	kiltBucket string
-}
-
-func New(config aws.Config) AwsUtil {
-	r := AwsUtil{
-		config: config,
+func GetAwsAccountName(cfg aws.Config, stsc *sts.Client) (string, error) {
+	if stsc == nil {
+		stsc = sts.NewFromConfig(cfg)
 	}
-	r.GetAwsAccountName()
-	r.GetRegion()
-	return r
-}
-
-func (r *AwsUtil) GetAwsAccountName() (string, error) {
-	if r.AwsAccountID == "" {
-		stsc := sts.NewFromConfig(r.config)
-		output, err := stsc.GetCallerIdentity(context.TODO(), nil)
-		if err != nil {
-			return "", fmt.Errorf("cannot get own account id: %w", err)
-		}
-		r.AwsAccountID = *output.Account
+	output, err := stsc.GetCallerIdentity(context.Background(), nil)
+	if err != nil {
+		return "", fmt.Errorf("cannot get own account id: %w", err)
 	}
-	return r.AwsAccountID, nil
+	return *output.Account, nil
 }
 
-func (r *AwsUtil) GetRegion() (string, error) {
-	if r.AwsRegionName == "" {
-		if r.config.Region == "" {
-			return "", fmt.Errorf("region is empty: please configure the region using AWS_REGION environment variable or awscli config")
-		}
-		r.AwsRegionName = r.config.Region
+func GetRegion(cfg aws.Config) (string, error) {
+	if cfg.Region == "" {
+		return "", fmt.Errorf("region is empty: please configure the region using AWS_REGION environment variable or awscli config")
 	}
-	return r.AwsRegionName, nil
+	return cfg.Region, nil
 }
 
-func (r *AwsUtil) GetOrCreateKiltS3Bucket(s3Client *s3.Client) (string, error){
-	if r.kiltBucket == "" {
-		var buf bytes.Buffer
-		if s3Client == nil {
-			s3Client = s3.NewFromConfig(r.config)
-		}
+func GetBucketName(accountId string, region string) (string, error){
+	var buf bytes.Buffer
+	t, err := template.New("kilt-bucket").Parse(bucketTemplate)
+	if err != nil {
+		return "", fmt.Errorf("cannot parse const bucket template: %w", err)
+	}
+	err = t.Execute(&buf, struct {
+		AwsAccountID string
+		AwsRegionName string
+	}{
+		accountId,
+		region,
+	})
+	if err != nil {
+		return "", fmt.Errorf("cannot execute const bucket template: %w", err)
+	}
+	return buf.String(), nil
+}
 
-		// template is a const so it cannot fail
-		t, err := template.New("kilt-bucket").Parse(bucketTemplate)
-		if err != nil {
-			return "", fmt.Errorf("cannot parse const bucket template: %w", err)
-		}
-		err = t.Execute(&buf, r)
-		if err != nil {
-			return "", fmt.Errorf("cannot execute const bucket template: %w", err)
-		}
-
-		bucket := buf.String()
-
-		_, err = s3Client.HeadBucket(context.TODO(), &s3.HeadBucketInput{
-			Bucket: &bucket,
+func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
+	_, err := s3Client.HeadBucket(context.Background(), &s3.HeadBucketInput{
+		Bucket: &bucketName,
+	})
+	if err != nil {
+		_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
+			Bucket: &bucketName,
 		})
 		if err != nil {
-			_, err = s3Client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
-				Bucket: &bucket,
-			})
-			if err != nil {
-				return "", fmt.Errorf("could not create S3 bucket %s: %w", bucket, err)
-			}
+			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
 		}
-		r.kiltBucket = bucket
 	}
-	return r.kiltBucket, nil
+	return  nil
 }

@@ -43,9 +43,7 @@ Resources:
           {{if .OptIn -}}
           KILT_OPT_IN: "YES"
           {{- end}}
-          {{if .KiltKmsSecret -}}
-          KILT_IMAGE_AUTH_SECRET: "{{ .KiltKmsSecret }}"
-          {{- end}}
+          KILT_RECIPE_CONFIG: '{{ .RecipeConfig }}'
       Code:
         S3Bucket: {{ .BucketName }}
         S3Key: {{ .KiltZipPath }}

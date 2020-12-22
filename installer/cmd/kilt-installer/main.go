@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/falcosecurity/kilt/installer"
-	cfn_macro "github.com/falcosecurity/kilt/installer/runtimes/cfn-macro"
 	"github.com/markbates/pkger"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -10,13 +8,13 @@ import (
 
 func main() {
 	pkger.Include("/artifacts")
-	macro := cfn_macro.CfnMacroInstaller{}
+
 	commands := make([]*cli.Command, 0)
-	for _, c := range macro.GetCommands(&installer.Hooks{}) {
+	for _, c := range registerCfnMacro() {
 		commands = append(commands, c)
 	}
 	app := cli.App{
-		Name: "kilt-installer",
+		Name: "kilt",
 		Commands: commands,
 	}
 	app.Run(os.Args)

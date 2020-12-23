@@ -1,9 +1,11 @@
 import click
 import boto3
 import threading
+import logging
 import sys
 from os import path
 from jinja2 import Environment, FileSystemLoader
+from botocore.exceptions import ClientError
 
 
 bundle_dir = path.dirname(__file__)
@@ -85,14 +87,21 @@ def main(macro_name, path_to_kilt_definition, region, opt_in, kilt_zip_name, kms
 
 
 def get_s3_bucket(aws_account, aws_region):
-    s3_bucket_name = f'kilt-{aws_account}-{aws_region}'
-    s3 = boto3.resource('s3')
-    s3.create_bucket(
-        ACL='private',
-        Bucket=s3_bucket_name
-    )
-    bucket = s3.Bucket(s3_bucket_name)
-    bucket.wait_until_exists()
+    try:
+        s3_bucket_name = f'kilt-{aws_account}-{aws_region}'
+        s3 = boto3.resource(service_name='s3', region_name=aws_region)
+        location = {'LocationConstraint': aws_region}
+        s3.create_bucket(
+            ACL='private',
+            Bucket=s3_bucket_name,
+            CreateBucketConfiguration=location
+        )
+
+        bucket = s3.Bucket(s3_bucket_name)
+        bucket.wait_until_exists()
+    except ClientError as e:
+        logging.error(e)
+        sys.exit(1)
     return bucket
 
 

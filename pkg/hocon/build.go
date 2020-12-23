@@ -2,8 +2,10 @@ package hocon
 
 import (
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
+
 	"github.com/go-akka/configuration"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 func extractBuild(config *configuration.Config) (*kilt.Build, error) {

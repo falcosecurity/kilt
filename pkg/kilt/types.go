@@ -17,14 +17,14 @@ type TargetInfo struct {
 }
 
 type BuildResource struct {
-	Name string
+	Name       string
 	Image      string
 	Volumes    []string
 	EntryPoint []string
 }
 
 type Build struct {
-	Image string
+	Image                string
 	EntryPoint           []string
 	Command              []string
 	EnvironmentVariables map[string]string
@@ -52,17 +52,17 @@ type Runtime struct {
 type PayloadType string
 
 const (
-	URL PayloadType = "url"
+	URL       PayloadType = "url"
 	LocalPath PayloadType = "local-path"
-	Base64 PayloadType = "base64"
-	Text PayloadType = "text"
-	Unknown PayloadType = "unknown"
+	Base64    PayloadType = "base64"
+	Text      PayloadType = "text"
+	Unknown   PayloadType = "unknown"
 )
 
 type Payload struct {
 	Contents string
-	Type PayloadType
-	Gzipped bool
+	Type     PayloadType
+	Gzipped  bool
 }
 
 type LanguageInterface interface {

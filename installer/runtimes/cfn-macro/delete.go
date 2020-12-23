@@ -3,6 +3,7 @@ package cfn_macro
 import (
 	"context"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )

@@ -2,22 +2,23 @@ package cfnpatcher
 
 import (
 	"context"
+	"strings"
+
 	"github.com/Jeffail/gabs/v2"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
 
 type Configuration struct {
-	Kilt string
+	Kilt            string
 	ImageAuthSecret string
-	OptIn bool
-	RecipeConfig string
+	OptIn           bool
+	RecipeConfig    string
 }
 
 type InstrumentationHints struct {
-	IgnoreContainersNamed []string
+	IgnoreContainersNamed  []string
 	IncludeContainersNamed []string
-	HasGlobalInclude bool
+	HasGlobalInclude       bool
 }
 
 const KiltIgnoreTag = "kilt-ignore"
@@ -25,8 +26,7 @@ const KiltIncludeTag = "kilt-include"
 const KiltIgnoreContainersTag = "kilt-ignore-containers"
 const KiltIncludeContainersTag = "kilt-include-containers"
 
-
-func isIgnored(tags map[string]string, isOptIn bool) bool{
+func isIgnored(tags map[string]string, isOptIn bool) bool {
 	_, included := tags[KiltIncludeTag]
 	_, ignored := tags[KiltIgnoreTag]
 	_, hasNamedContainerIncluded := tags[KiltIncludeContainersTag]
@@ -46,13 +46,13 @@ func extractContainersFromTag(tags map[string]string, tag string) []string {
 func extractHintsFromTags(tags map[string]string) *InstrumentationHints {
 	_, included := tags[KiltIncludeTag]
 	return &InstrumentationHints{
-		IgnoreContainersNamed: extractContainersFromTag(tags, KiltIgnoreContainersTag),
+		IgnoreContainersNamed:  extractContainersFromTag(tags, KiltIgnoreContainersTag),
 		IncludeContainersNamed: extractContainersFromTag(tags, KiltIncludeContainersTag),
-		HasGlobalInclude: included,
+		HasGlobalInclude:       included,
 	}
 }
 
-func Patch(ctx context.Context, configuration *Configuration , fragment []byte) ([]byte, error) {
+func Patch(ctx context.Context, configuration *Configuration, fragment []byte) ([]byte, error) {
 	l := log.Ctx(ctx)
 	template, err := gabs.ParseJSON(fragment)
 	if err != nil {

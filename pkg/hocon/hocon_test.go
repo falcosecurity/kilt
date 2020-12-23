@@ -2,10 +2,12 @@ package hocon
 
 import (
 	"encoding/json"
-	"github.com/falcosecurity/kilt/pkg/kilt"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 func TestSimpleRuntime(t *testing.T) {

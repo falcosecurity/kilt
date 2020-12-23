@@ -32,7 +32,7 @@ func getWithDefaultUint16(object *hocon.HoconObject, key string, fallback uint16
 func getWithDefaultUint32(object *hocon.HoconObject, key string, fallback uint32) uint32 {
 	t := object.GetKey(key)
 
-	if  t==nil ||  t.IsEmpty() {
+	if t == nil || t.IsEmpty() {
 		return fallback
 	}
 

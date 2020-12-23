@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"text/template"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"text/template"
 )
 
 const bucketTemplate = "kilt-{{ .AwsAccountID }}-{{ .AwsRegionName }}"
-
 
 func GetAwsAccountName(cfg aws.Config, stsc *sts.Client) (string, error) {
 	if stsc == nil {
@@ -31,14 +31,14 @@ func GetRegion(cfg aws.Config) (string, error) {
 	return cfg.Region, nil
 }
 
-func GetBucketName(accountId string, region string) (string, error){
+func GetBucketName(accountId string, region string) (string, error) {
 	var buf bytes.Buffer
 	t, err := template.New("kilt-bucket").Parse(bucketTemplate)
 	if err != nil {
 		return "", fmt.Errorf("cannot parse const bucket template: %w", err)
 	}
 	err = t.Execute(&buf, struct {
-		AwsAccountID string
+		AwsAccountID  string
 		AwsRegionName string
 	}{
 		accountId,
@@ -62,5 +62,5 @@ func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
 		}
 	}
-	return  nil
+	return nil
 }

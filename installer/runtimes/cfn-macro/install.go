@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
+	"text/template"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"io/ioutil"
-	"text/template"
 )
 
 func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
@@ -22,8 +23,8 @@ func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
 	fmt.Printf("Uploading lambda code. This might take a while...")
 	_, err := uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket: &r.awsKiltBucketName,
-		Key: &params.ZipDestinationName,
-		Body: params.LambdaZip,
+		Key:    &params.ZipDestinationName,
+		Body:   params.LambdaZip,
 	})
 	if err != nil {
 		fmt.Printf("ERROR!\n")
@@ -35,8 +36,8 @@ func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
 	fmt.Printf("Uploading kilt definition %s...", kiltDefinitionFile)
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket: &r.awsKiltBucketName,
-		Key: aws.String(kiltDefinitionFile),
-		Body: params.KiltDefinition,
+		Key:    aws.String(kiltDefinitionFile),
+		Body:   params.KiltDefinition,
 	})
 	if err != nil {
 		return fmt.Errorf("could not upload kilt definition to s3: %w", err)
@@ -50,9 +51,8 @@ func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
 
 	t, err := template.New("kilt-definition").Parse(string(data))
 	if err != nil {
-		return fmt.Errorf("could not parse CFN template: %w" , err)
+		return fmt.Errorf("could not parse CFN template: %w", err)
 	}
-
 
 	var buf bytes.Buffer
 	err = t.Execute(&buf, params.ModelBuilder(TemplateDefaultModel{
@@ -64,12 +64,12 @@ func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
 		RecipeConfig:  params.RecipeConfig,
 	}))
 	if err != nil {
-		return fmt.Errorf("could not compute macro template: %w" , err)
+		return fmt.Errorf("could not compute macro template: %w", err)
 	}
 
 	stackName := macroPrefix + params.MacroName
 	_, err = cfnc.CreateStack(context.Background(), &cloudformation.CreateStackInput{
-		StackName: &stackName,
+		StackName:    &stackName,
 		TemplateBody: aws.String(buf.String()),
 		Capabilities: []types.Capability{
 			types.CapabilityCapabilityIam,

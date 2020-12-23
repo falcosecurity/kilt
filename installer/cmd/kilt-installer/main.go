@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/markbates/pkger"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 		commands = append(commands, c)
 	}
 	app := cli.App{
-		Name: "kilt",
+		Name:     "kilt",
 		Commands: commands,
 	}
 	app.Run(os.Args)

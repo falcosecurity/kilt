@@ -3,9 +3,10 @@ package cfn_macro
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 func (r *CfnMacroInstaller) List() error {
@@ -28,7 +29,6 @@ func (r *CfnMacroInstaller) List() error {
 			fmt.Printf("%s - Last Modified: %s\n", macroName, obj.LastModified.Format(time.RFC3339))
 		}
 	}
-
 
 	return nil
 }

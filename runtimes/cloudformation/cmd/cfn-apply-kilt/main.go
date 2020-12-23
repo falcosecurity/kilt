@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
-	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
+
+	"github.com/rs/zerolog"
+
+	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
 )
 
 func main() {
@@ -31,6 +33,7 @@ func main() {
 		ImageAuthSecret: "",
 		OptIn:           false,
 	}
+
 	ctx := context.Background()
 	l := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	ctx = l.WithContext(ctx)
@@ -41,5 +44,4 @@ func main() {
 	}
 
 	fmt.Printf("%s\n", string(result))
-
 }

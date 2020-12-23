@@ -46,7 +46,7 @@ build {
 }
 `
 
-func runTest(t *testing.T, name string, context context.Context, config Configuration){
+func runTest(t *testing.T, name string, context context.Context, config Configuration) {
 	fragment, err := ioutil.ReadFile("fixtures/" + name + ".json")
 	if err != nil {
 		t.Fatalf("cannot find fixtures/%s.json", name)
@@ -58,7 +58,7 @@ func runTest(t *testing.T, name string, context context.Context, config Configur
 	expected, err := ioutil.ReadFile("fixtures/" + name + ".patched.json")
 	if err != nil {
 		// To regenerate test simply delete patched variant
-		_ = ioutil.WriteFile("fixtures/" + name + ".patched.json", result, 0644)
+		_ = ioutil.WriteFile("fixtures/"+name+".patched.json", result, 0644)
 		return
 	}
 
@@ -76,7 +76,7 @@ func runTest(t *testing.T, name string, context context.Context, config Configur
 		_ = json.Unmarshal(result, &expectedJson) // would error during diff
 		formatter := formatter.NewAsciiFormatter(expectedJson, formatter.AsciiFormatterConfig{
 			ShowArrayIndex: true,
-			Coloring: true,
+			Coloring:       true,
 		})
 		diffString, _ := formatter.Format(d)
 		fmt.Println(diffString)
@@ -92,9 +92,9 @@ func TestPatchingOptIn(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
-				Kilt: defaultConfig,
-				OptIn:      true,
-			})
+					Kilt:  defaultConfig,
+					OptIn: true,
+				})
 		})
 	}
 }
@@ -106,8 +106,8 @@ func TestPatching(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
-					Kilt: defaultConfig,
-					OptIn:      false,
+					Kilt:  defaultConfig,
+					OptIn: false,
 				})
 		})
 	}

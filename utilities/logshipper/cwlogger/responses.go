@@ -9,4 +9,3 @@ type putLogEventsErrorResponse struct {
 	Message               string  `json:"message"`
 	ExpectedSequenceToken *string `json:"expectedSequenceToken"`
 }
-

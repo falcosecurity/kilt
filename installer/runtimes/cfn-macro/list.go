@@ -3,12 +3,14 @@ package cfn_macro
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/falcosecurity/kilt/installer/util"
-	"github.com/urfave/cli/v2"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/urfave/cli/v2"
+
+	"github.com/falcosecurity/kilt/installer/util"
 )
 
 func listMacros(cfg aws.Config) cli.ActionFunc {
@@ -43,7 +45,6 @@ func listMacros(cfg aws.Config) cli.ActionFunc {
 				fmt.Printf("%s - Last Modified: %s\n", macroName, obj.LastModified.Format(time.RFC3339))
 			}
 		}
-
 
 		return nil
 	}

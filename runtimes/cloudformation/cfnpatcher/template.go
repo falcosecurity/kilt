@@ -2,6 +2,7 @@ package cfnpatcher
 
 import (
 	"github.com/Jeffail/gabs/v2"
+
 	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
@@ -44,6 +45,5 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 	}
 
 	// TODO(admiral0): metadata tags
-
 	return info
 }

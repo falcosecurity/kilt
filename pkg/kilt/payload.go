@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-
-
 func retrievePayloadViaURL(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {

@@ -9,7 +9,7 @@ type Installable interface {
 }
 
 type Hooks struct {
-	PreInstall cli.ActionFunc
-	PostInstall cli.ActionFunc
+	PreInstall     cli.ActionFunc
+	PostInstall    cli.ActionFunc
 	OverrideConfig interface{}
 }

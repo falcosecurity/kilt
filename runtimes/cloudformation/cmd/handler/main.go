@@ -3,31 +3,29 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/falcosecurity/kilt/runtimes/cloudformation/config"
 	"os"
-
-	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
+	"github.com/falcosecurity/kilt/runtimes/cloudformation/config"
 )
 
 type MacroInput struct {
-	Region string `json:"region"`
-	AccountID string `json:"accountId"`
-	RequestID string `json:"requestId"`
-	TransformID string `json:"transformId"`
-	Fragment json.RawMessage `json:"fragment"`
+	Region      string          `json:"region"`
+	AccountID   string          `json:"accountId"`
+	RequestID   string          `json:"requestId"`
+	TransformID string          `json:"transformId"`
+	Fragment    json.RawMessage `json:"fragment"`
 }
 
 type MacroOutput struct {
-	RequestID string `json:"requestId"`
-	Status string `json:"status"`
-	Fragment json.RawMessage `json:"fragment"`
+	RequestID string          `json:"requestId"`
+	Status    string          `json:"status"`
+	Fragment  json.RawMessage `json:"fragment"`
 }
-
-
 
 func HandleRequest(configuration *cfnpatcher.Configuration, ctx context.Context, event MacroInput) (MacroOutput, error) {
 	l := log.With().
@@ -41,10 +39,9 @@ func HandleRequest(configuration *cfnpatcher.Configuration, ctx context.Context,
 	if err != nil {
 		return MacroOutput{event.RequestID, "failure", result}, err
 	}
+
 	return MacroOutput{event.RequestID, "success", result}, nil
 }
-
-
 
 func ConfigClosure() interface{} {
 	definition := os.Getenv("KILT_DEFINITION")
@@ -69,10 +66,10 @@ func ConfigClosure() interface{} {
 	}
 
 	configuration := &cfnpatcher.Configuration{
-		Kilt:  fullDefinition,
+		Kilt:            fullDefinition,
 		ImageAuthSecret: imageAuth,
-		OptIn: optIn != "",
-		RecipeConfig: recipeConfig,
+		OptIn:           optIn != "",
+		RecipeConfig:    recipeConfig,
 	}
 
 	return func(ctx context.Context, event MacroInput) (MacroOutput, error) {
@@ -84,5 +81,3 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	lambda.Start(ConfigClosure())
 }
-
-

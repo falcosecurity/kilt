@@ -12,7 +12,7 @@ func main() {
 	currentIndex := -1
 	var currentCommand []string
 	for i, arg := range os.Args {
-		if i == 0  || arg == "--" {
+		if i == 0 || arg == "--" {
 			if i != 0 {
 				commands = append(commands, currentCommand)
 			}
@@ -41,7 +41,7 @@ func main() {
 			Env: os.Environ(),
 			Sys: &syscall.SysProcAttr{
 				Foreground: false,
-				Setsid: true,
+				Setsid:     true,
 			},
 		})
 		if err != nil {

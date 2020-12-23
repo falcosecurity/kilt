@@ -155,6 +155,7 @@ func (lg *Logger) createIfNotExists() error {
 		})
 		_, err = req.Send(ctx)
 	}
+
 	return err
 }
 
@@ -181,7 +182,9 @@ func newLogStreams(lg *Logger) *logStreams {
 		writes:  make(chan []cloudwatchlogs.InputLogEvent),
 		errors:  make(chan *writeError),
 	}
+
 	go streams.coordinator()
+
 	return streams
 }
 

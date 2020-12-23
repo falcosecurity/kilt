@@ -1,7 +1,5 @@
 package kilt
 
-
-
 type Kilt struct {
 	definition LanguageInterface
 }

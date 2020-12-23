@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"text/template"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"text/template"
 )
 
 const bucketTemplate = "kilt-{{ .AwsAccountID }}-{{ .AwsRegionName }}"
@@ -15,9 +16,9 @@ const bucketTemplate = "kilt-{{ .AwsAccountID }}-{{ .AwsRegionName }}"
 type AwsUtil struct {
 	config aws.Config
 
-	AwsAccountID string
+	AwsAccountID  string
 	AwsRegionName string
-	kiltBucket string
+	kiltBucket    string
 }
 
 func New(config aws.Config) AwsUtil {
@@ -26,6 +27,7 @@ func New(config aws.Config) AwsUtil {
 	}
 	r.GetAwsAccountName()
 	r.GetRegion()
+
 	return r
 }
 
@@ -38,6 +40,7 @@ func (r *AwsUtil) GetAwsAccountName() (string, error) {
 		}
 		r.AwsAccountID = *output.Account
 	}
+
 	return r.AwsAccountID, nil
 }
 
@@ -48,10 +51,11 @@ func (r *AwsUtil) GetRegion() (string, error) {
 		}
 		r.AwsRegionName = r.config.Region
 	}
+
 	return r.AwsRegionName, nil
 }
 
-func (r *AwsUtil) GetOrCreateKiltS3Bucket(s3Client *s3.Client) (string, error){
+func (r *AwsUtil) GetOrCreateKiltS3Bucket(s3Client *s3.Client) (string, error) {
 	if r.kiltBucket == "" {
 		var buf bytes.Buffer
 		if s3Client == nil {
@@ -83,5 +87,6 @@ func (r *AwsUtil) GetOrCreateKiltS3Bucket(s3Client *s3.Client) (string, error){
 		}
 		r.kiltBucket = bucket
 	}
+
 	return r.kiltBucket, nil
 }

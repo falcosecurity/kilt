@@ -3,11 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/admiral0/kilt-tests/logshipper/cwlogger"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
-	"os"
-	"time"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func main() {
 	}
 	cw := cloudwatchlogs.New(cfg)
 	logger, err := cwlogger.New(&cwlogger.Config{
-		Client: cw,
+		Client:       cw,
 		LogGroupName: os.Getenv("__CW_LOG_GROUP"),
 	})
 	if err != nil {

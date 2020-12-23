@@ -3,11 +3,12 @@ package cfnpatcher
 import (
 	"context"
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
-	"github.com/falcosecurity/kilt/pkg/kiltapi"
 
 	"github.com/Jeffail/gabs/v2"
 	"github.com/rs/zerolog/log"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
+	"github.com/falcosecurity/kilt/pkg/kiltapi"
 )
 
 func containerInConfig(name string, listOfNames []string) bool {
@@ -19,7 +20,7 @@ func containerInConfig(name string, listOfNames []string) bool {
 	return false
 }
 
-func shouldSkip(info *kilt.TargetInfo, configuration *Configuration, hints *InstrumentationHints) bool{
+func shouldSkip(info *kilt.TargetInfo, configuration *Configuration, hints *InstrumentationHints) bool {
 	isForceIncluded := containerInConfig(info.ContainerName, hints.IncludeContainersNamed)
 	isExcluded := containerInConfig(info.ContainerName, hints.IgnoreContainersNamed)
 
@@ -46,7 +47,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 				l.Info().Msgf("skipping container due to hints in tags")
 				continue
 			}
-			patch, err  := k.Build(info)
+			patch, err := k.Build(info)
 			if err != nil {
 				return nil, fmt.Errorf("could not construct kilt patch: %w", err)
 			}
@@ -54,7 +55,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 			err = applyContainerDefinitionPatch(l.WithContext(ctx), container, patch)
 			if err != nil {
 				l.Warn().Str("resource", name).Err(err).Msg("skipped patching container in task definition")
-			}else{
+			} else {
 				successes += 1
 			}
 
@@ -62,14 +63,17 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 				containers[appendResource.Name] = appendResource
 			}
 		}
+
 		err := appendContainers(resource, containers, configuration.ImageAuthSecret)
 		if err != nil {
 			return nil, fmt.Errorf("could not append container: %w", err)
 		}
 	}
+
 	if successes == 0 {
 		return resource, fmt.Errorf("could not patch a single container in the task")
 	}
+
 	return resource, nil
 }
 
@@ -89,9 +93,9 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		return fmt.Errorf("could not set Command: %w", err)
 	}
 
-	if ! container.Exists("VolumesFrom") {
+	if !container.Exists("VolumesFrom") {
 		_, err = container.Set([]interface{}{}, "VolumesFrom")
-		if err!= nil {
+		if err != nil {
 			return fmt.Errorf("could not set VolumesFrom: %w", err)
 		}
 	}
@@ -103,7 +107,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 			continue
 		}
 		addVolume := map[string]interface{}{
-			"ReadOnly": true,
+			"ReadOnly":        true,
 			"SourceContainer": newContainer.Name,
 		}
 
@@ -113,8 +117,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 
-
-	if ! (container.Exists("Environment") || len(patch.EnvironmentVariables) == 0) {
+	if !(container.Exists("Environment") || len(patch.EnvironmentVariables) == 0) {
 		_, err = container.Set([]interface{}{}, "Environment")
 
 		if err != nil {
@@ -130,11 +133,10 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		if err != nil {
 			return fmt.Errorf("could not add environment variable %v: %w", keyValue, err)
 		}
-
 	}
 
 	// We need to add SYS_PTRACE capability to the container
-	if ! container.Exists("LinuxParameters") {
+	if !container.Exists("LinuxParameters") {
 		emptyMap := make(map[string]interface{})
 		_, err = container.Set(emptyMap, "LinuxParameters")
 		if err != nil {
@@ -142,7 +144,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 
-	if ! container.Exists("LinuxParameters", "Capabilities") {
+	if !container.Exists("LinuxParameters", "Capabilities") {
 		emptyMap := make(map[string]interface{})
 		_, err = container.Set(emptyMap, "LinuxParameters", "Capabilities")
 		if err != nil {
@@ -162,8 +164,8 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 func appendContainers(resource *gabs.Container, containers map[string]kilt.BuildResource, imageAuth string) error {
 	for _, inject := range containers {
 		appended := map[string]interface{}{
-			"Name": inject.Name,
-			"Image": inject.Image,
+			"Name":       inject.Name,
+			"Image":      inject.Image,
 			"EntryPoint": inject.EntryPoint,
 		}
 		if len(imageAuth) > 0 {
@@ -176,5 +178,6 @@ func appendContainers(resource *gabs.Container, containers map[string]kilt.Build
 			return fmt.Errorf("could not inject %s: %w", inject.Name, err)
 		}
 	}
+
 	return nil
 }

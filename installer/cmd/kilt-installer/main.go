@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/falcosecurity/kilt/installer"
-	cfn_macro "github.com/falcosecurity/kilt/installer/runtimes/cfn-macro"
+	"os"
+
 	"github.com/markbates/pkger"
 	"github.com/urfave/cli/v2"
-	"os"
+
+	"github.com/falcosecurity/kilt/installer"
+	cfn_macro "github.com/falcosecurity/kilt/installer/runtimes/cfn-macro"
 )
 
 func main() {
@@ -16,7 +18,7 @@ func main() {
 		commands = append(commands, c)
 	}
 	app := cli.App{
-		Name: "kilt-installer",
+		Name:     "kilt-installer",
 		Commands: commands,
 	}
 	app.Run(os.Args)

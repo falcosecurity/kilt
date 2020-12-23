@@ -3,11 +3,13 @@ package cfn_macro
 import (
 	"context"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/falcosecurity/kilt/installer/util"
 	"github.com/urfave/cli/v2"
+
+	"github.com/falcosecurity/kilt/installer/util"
 )
 
 func deleteMacros(cfg aws.Config) cli.ActionFunc {

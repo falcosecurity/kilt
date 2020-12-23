@@ -3,8 +3,10 @@ package hocon
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
+
 	"github.com/go-akka/configuration"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 var defaults = `
@@ -20,7 +22,7 @@ build {
 
 type KiltHocon struct {
 	definition string
-	config kilt.RecipeConfig
+	config     kilt.RecipeConfig
 }
 
 type HoconProvided struct {
@@ -36,7 +38,7 @@ func NewKiltHoconWithConfig(definition string, config kilt.RecipeConfig) *KiltHo
 	h.definition = definition
 	if config == nil {
 		h.config = new(kilt.RecipeConfig)
-	}else {
+	} else {
 		h.config = config
 	}
 	return h
@@ -74,9 +76,8 @@ func (k *KiltHocon) Runtime(info *kilt.TargetInfo) (*kilt.Runtime, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not assemble full config: %w", err)
 	}
-	if ! config.HasPath("runtime"){
+	if !config.HasPath("runtime") {
 		return nil, fmt.Errorf("definition does not have a runtime section")
 	}
 	return extractRuntime(config)
 }
-

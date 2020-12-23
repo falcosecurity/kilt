@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 )
 
-func decompressBytes(data []byte) []byte{
+func decompressBytes(data []byte) []byte {
 	reader, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
 		panic(fmt.Errorf("error constructing decompressor: %w", err))

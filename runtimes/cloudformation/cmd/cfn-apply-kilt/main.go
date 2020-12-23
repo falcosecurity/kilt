@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
-	"github.com/rs/zerolog"
 	"io/ioutil"
 	"os"
+
+	"github.com/rs/zerolog"
+
+	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
 )
 
 func main() {

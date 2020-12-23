@@ -3,8 +3,10 @@ package hocon
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
+
 	"github.com/go-akka/configuration"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 var defaults = `
@@ -20,7 +22,7 @@ build {
 
 type KiltHocon struct {
 	definition string
-	config 	   string
+	config     string
 }
 
 type HoconProvided struct {
@@ -44,12 +46,12 @@ func (k *KiltHocon) prepareFullStringConfig(info *kilt.TargetInfo) (*configurati
 		return nil, fmt.Errorf("could not serialize info: %w", err)
 	}
 
-	fmt.Println("ANTANI",string(rawVars), "ANTANI")
+	fmt.Println("ANTANI", string(rawVars), "ANTANI")
 	configString := "original:" + string(rawVars) + "\n" +
 		"config:" + k.config + "\n" +
 		defaults + k.definition
 
-	fmt.Println("ANTANI",string(configString), "ANTANI")
+	fmt.Println("ANTANI", string(configString), "ANTANI")
 
 	return configuration.ParseString(configString), nil
 }
@@ -68,9 +70,8 @@ func (k *KiltHocon) Runtime(info *kilt.TargetInfo) (*kilt.Runtime, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not assemble full config: %w", err)
 	}
-	if ! config.HasPath("runtime"){
+	if !config.HasPath("runtime") {
 		return nil, fmt.Errorf("definition does not have a runtime section")
 	}
 	return extractRuntime(config)
 }
-

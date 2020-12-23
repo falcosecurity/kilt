@@ -6,6 +6,7 @@ require (
 	github.com/Jeffail/gabs/v2 v2.6.0
 	github.com/aws/aws-lambda-go v1.19.1
 	github.com/aws/aws-sdk-go v1.34.27
+	github.com/falcosecurity/kilt/pkg v0.0.0-20201012153322-cfbae90c1fbc
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/onsi/ginkgo v1.14.1 // indirect
@@ -15,7 +16,6 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
-	github.com/falcosecurity/kilt/pkg v0.0.0-20201012153322-cfbae90c1fbc
 )
 
 replace github.com/falcosecurity/kilt/pkg => ./../../pkg

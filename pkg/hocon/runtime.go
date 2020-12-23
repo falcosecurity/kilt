@@ -2,8 +2,10 @@ package hocon
 
 import (
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
+
 	"github.com/go-akka/configuration"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 func extractRuntime(config *configuration.Config) (*kilt.Runtime, error) {

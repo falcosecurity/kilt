@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"io/ioutil"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 func FromS3(path string, decompress bool) string {
@@ -26,7 +27,7 @@ func FromS3(path string, decompress bool) string {
 
 	obj, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: &splitPath[0],
-		Key: &splitPath[1],
+		Key:    &splitPath[1],
 	})
 
 	if err != nil {

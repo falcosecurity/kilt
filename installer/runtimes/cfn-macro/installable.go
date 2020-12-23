@@ -1,47 +1,47 @@
 package cfn_macro
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"io"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 const (
-	macroPrefix = "KiltMacro"
+	macroPrefix   = "KiltMacro"
 	s3MacroPrefix = "cfn-macro-"
 	macroS3Suffix = ".kilt.cfg"
-
 )
 
 type CfnMacroInstaller struct {
-	awsConfig aws.Config
+	awsConfig         aws.Config
 	awsKiltBucketName string
 }
 
 type InstallationParameters struct {
 	KiltDefinition io.ReadCloser
-	MacroName string
-	OptIn bool
-	RecipeConfig string
+	MacroName      string
+	OptIn          bool
+	RecipeConfig   string
 
-	LambdaZip io.ReadCloser
+	LambdaZip          io.ReadCloser
 	ZipDestinationName string
 
-	CfnTemplate io.ReadCloser
+	CfnTemplate  io.ReadCloser
 	ModelBuilder TemplateModelBuilderFunc
 }
 
 type TemplateDefaultModel struct {
-	BucketName string
-	MacroName string
+	BucketName    string
+	MacroName     string
 	MacroFileName string
-	OptIn bool
-	KiltZipPath string
-	RecipeConfig string
+	OptIn         bool
+	KiltZipPath   string
+	RecipeConfig  string
 }
 type TemplateModelBuilderFunc func(input TemplateDefaultModel) interface{}
 
 type Config struct {
-	TemplateFile string
+	TemplateFile         string
 	TemplateModelBuilder TemplateModelBuilderFunc
 }
 

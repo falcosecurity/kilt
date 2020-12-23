@@ -2,8 +2,10 @@ package hocon
 
 import (
 	"fmt"
-	"github.com/falcosecurity/kilt/pkg/kilt"
+
 	"github.com/go-akka/configuration/hocon"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 func retrievePayload(object *hocon.HoconObject) (*kilt.Payload, error) {
@@ -29,7 +31,6 @@ func retrievePayload(object *hocon.HoconObject) (*kilt.Payload, error) {
 	if payload.Type == kilt.Unknown {
 		return nil, fmt.Errorf("could not identify payload type for %s", object.ToString(1))
 	}
-
 
 	return payload, nil
 }

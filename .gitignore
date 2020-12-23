@@ -6,3 +6,4 @@
 /installer/kilt
 /installer/cmd/kilt-installer/pkged.go
 /installer/cmd/kilt-installer/kilt-installer
+/dist/

@@ -1,12 +1,14 @@
-name: Release Kilt Runtimes
+name: Release Kilt
 
 on:
   push:
     tags:
       - 'v*'
 
+
 jobs:
-  build-cfn-lambda:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -14,116 +16,12 @@ jobs:
         with:
           go-version: ^1.15
         id: go
-      - name: Checkout Repo
+      - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Build
-        run: |
-          cd runtimes/cloudformation
-          make kilt.zip
-      - name: Archive kilt.zip
-        uses: actions/upload-artifact@v2
         with:
-          name: kilt.zip
-          path: runtimes/cloudformation/kilt.zip
-  build-cfn-installer-linux:
-    runs-on: ubuntu-latest
-    needs: build-cfn-lambda
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Download kilt.zip
-        uses: actions/download-artifact@v2
+          fetch-depth: 0
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser@v2
         with:
-          name: kilt.zip
-          path: runtimes/cloudformation/kilt.zip
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          cd runtimes/cloudformation/installer
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Build installer
-        run: |
-          cd runtimes/cloudformation/installer
-          pyinstaller main.spec
-      - name: Archive installer
-        uses: actions/upload-artifact@v2
-        with:
-          name: kilt-cfn-installer-linux
-          path: runtimes/cloudformation/installer/dist/kilt-installer
-  build-cfn-installer-macos:
-    runs-on: macos-latest
-    needs: build-cfn-lambda
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Download kilt.zip
-        uses: actions/download-artifact@v2
-        with:
-          name: kilt.zip
-          path: runtimes/cloudformation/kilt.zip
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          cd runtimes/cloudformation/installer
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Build installer
-        run: |
-          cd runtimes/cloudformation/installer
-          pyinstaller main.spec
-      - name: Archive installer
-        uses: actions/upload-artifact@v2
-        with:
-          name: kilt-cfn-installer-macos
-          path: runtimes/cloudformation/installer/dist/kilt-installer
-  create-release:
-    runs-on: ubuntu-latest
-    needs:
-      - build-cfn-installer-linux
-      - build-cfn-installer-macos
-    steps:
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Download linux installer
-        uses: actions/download-artifact@v2
-        with:
-          name: kilt-cfn-installer-linux
-          path: linux-installer/
-      - name: Download macos installer
-        uses: actions/download-artifact@v2
-        with:
-          name: kilt-cfn-installer-macos
-          path: macos-installer
-      - name: Upload Linux Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./linux-installer/kilt-installer
-          asset_name: kilt-cfn-installer-linux
-          asset_content_type: application/octet-stream
-      - name: Upload MacOS Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./macos-installer/kilt-installer
-          asset_name: kilt-cfn-installer-macos
-          asset_content_type: application/octet-stream
+          version: latest
+          args: release --rm-dist

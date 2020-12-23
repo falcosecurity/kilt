@@ -1,0 +1,37 @@
+
+before:
+  hooks:
+    - cd runtimes/cloudformation && make kilt.zip
+    - go get github.com/markbates/pkger/cmd/pkger
+builds:
+  - env:
+      - CGO_ENABLED=0
+    hooks:
+      pre: |
+        make clean
+        make deps
+        go generate ./...
+    main: ./cmd/kilt-installer
+    dir: installer
+    binary: kilt
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"text/template"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -61,6 +62,7 @@ func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
 		if err != nil {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
 		}
+		time.Sleep(5 * time.Second) // give AWS time to create bucket
 	}
 	return nil
 }

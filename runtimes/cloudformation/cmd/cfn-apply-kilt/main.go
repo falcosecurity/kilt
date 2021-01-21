@@ -29,9 +29,10 @@ func main() {
 	}
 
 	config := &cfnpatcher.Configuration{
-		Kilt:            string(kiltDef),
-		ImageAuthSecret: "",
-		OptIn:           false,
+		Kilt:               string(kiltDef),
+		ImageAuthSecret:    "",
+		OptIn:              false,
+		UseRepositoryHints: true,
 	}
 	ctx := context.Background()
 	l := zerolog.New(os.Stderr).With().Timestamp().Logger()

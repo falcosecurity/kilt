@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func extractContainerInfo(group *gabs.Container, groupName string, container *gabs.Container) *kilt.TargetInfo {
+func extractContainerInfo(group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *kilt.TargetInfo {
 	info := new(kilt.TargetInfo)
 
 	info.ContainerName = container.S("Name").Data().(string)
@@ -17,10 +17,11 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 	if container.Exists("Image") {
 		info.Image = container.S("Image").Data().(string)
 		repoInfo, err := getConfigFromRepository(info.Image)
-		if err == nil {
+		if err == nil && configuration.UseRepositoryHints {
 			info.EntryPoint = repoInfo.Entrypoint
 			info.Command = repoInfo.Command
-		}else{
+		}
+		if err != nil {
 			log.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
 		}
 	}

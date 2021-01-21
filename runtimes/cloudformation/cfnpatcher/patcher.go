@@ -35,7 +35,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, configuration.RecipeConfig)
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
-			info := extractContainerInfo(resource, name, container)
+			info := extractContainerInfo(resource, name, container, configuration)
 			l.Info().Msgf("extracted info for container: %v", info)
 			if shouldSkip(info, configuration, hints) {
 				l.Info().Msgf("skipping container due to hints in tags")

@@ -9,10 +9,11 @@ import (
 )
 
 type Configuration struct {
-	Kilt            string
-	ImageAuthSecret string
-	OptIn           bool
-	RecipeConfig    string
+	Kilt               string
+	ImageAuthSecret    string
+	OptIn              bool
+	RecipeConfig       string
+	UseRepositoryHints bool
 }
 
 type InstrumentationHints struct {

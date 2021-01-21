@@ -49,6 +49,7 @@ func ConfigClosure() interface{} {
 	optIn := os.Getenv("KILT_OPT_IN")
 	imageAuth := os.Getenv("KILT_IMAGE_AUTH_SECRET")
 	recipeConfig := os.Getenv("KILT_RECIPE_CONFIG")
+	disableRepoHints := os.Getenv("KILT_DISABLE_REPO_HINTS")
 	var fullDefinition string
 	switch definitionType {
 	case config.S3:
@@ -66,10 +67,11 @@ func ConfigClosure() interface{} {
 	}
 
 	configuration := &cfnpatcher.Configuration{
-		Kilt:            fullDefinition,
-		ImageAuthSecret: imageAuth,
-		OptIn:           optIn != "",
-		RecipeConfig:    recipeConfig,
+		Kilt:               fullDefinition,
+		ImageAuthSecret:    imageAuth,
+		OptIn:              optIn != "",
+		RecipeConfig:       recipeConfig,
+		UseRepositoryHints: disableRepoHints == "",
 	}
 
 	return func(ctx context.Context, event MacroInput) (MacroOutput, error) {

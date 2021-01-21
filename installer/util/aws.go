@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"text/template"
-	"time"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"text/template"
+	"time"
 )
 
 const bucketTemplate = "kilt-{{ .AwsAccountID }}-{{ .AwsRegionName }}"
@@ -62,7 +61,13 @@ func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
 		if err != nil {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
 		}
-		time.Sleep(5 * time.Second) // give AWS time to create bucket
+		be := s3.NewBucketExistsWaiter(s3Client)
+		err = be.Wait(context.Background(), &s3.HeadBucketInput{
+			Bucket: &bucketName,
+		}, 10 * time.Second)
+		if err != nil {
+			return fmt.Errorf("timed out while waiting the bucket %s to be created: %w", bucketName, err)
+		}
 	}
 	return nil
 }

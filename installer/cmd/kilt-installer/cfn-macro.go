@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,7 +39,7 @@ func initializeAwsBucket(cfg aws.Config) (string, error) {
 
 func registerCfnMacro() []*cli.Command {
 
-	cfg, err := config.LoadDefaultConfig()
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		fmt.Printf("could not load AWS config:\n")
 		panic(err)

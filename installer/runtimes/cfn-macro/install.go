@@ -79,5 +79,7 @@ func (r *CfnMacroInstaller) InstallMacro(params *InstallationParameters) error {
 		return fmt.Errorf("could not create cfn macro: %w", err)
 	}
 	fmt.Printf("Submitted cloudformation stack '%s'. Follow creation progress in AWS console\n", stackName)
+	fmt.Printf("After installation is completed you will be able to use \"Transform: [\"%s\"]\" in your" +
+		" template to automatically instrument it\n", params.MacroName)
 	return nil
 }

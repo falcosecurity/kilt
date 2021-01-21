@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -29,12 +30,16 @@ func initializeAwsBucket(cfg aws.Config) (string, error) {
 	if err != nil {
 		return "", cli.Exit("could not compute bucket name: "+err.Error(), 1)
 	}
+	err = util.EnsureBucketExists(bucket, nil)
+	if err != nil {
+		return "", cli.Exit("could not ensure existence of kilt s3 bucket: " + err.Error(), 1)
+	}
 	return bucket, nil
 }
 
 func registerCfnMacro() []*cli.Command {
 
-	cfg, err := config.LoadDefaultConfig()
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		fmt.Printf("could not load AWS config:\n")
 		panic(err)

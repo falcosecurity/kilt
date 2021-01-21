@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"text/template"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -60,6 +61,13 @@ func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
 		})
 		if err != nil {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
+		}
+		be := s3.NewBucketExistsWaiter(s3Client)
+		err = be.Wait(context.Background(), &s3.HeadBucketInput{
+			Bucket: &bucketName,
+		}, 10 * time.Second)
+		if err != nil {
+			return fmt.Errorf("timed out while waiting the bucket %s to be created: %w", bucketName, err)
 		}
 	}
 	return nil

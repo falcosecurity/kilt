@@ -1,16 +1,13 @@
 
 before:
   hooks:
-    - cd runtimes/cloudformation && make kilt.zip
+    - make -C runtimes/cloudformation kilt.zip
+    - make -C installer deps
     - go get github.com/markbates/pkger/cmd/pkger
+    - go generate installer/generate.go
 builds:
   - env:
       - CGO_ENABLED=0
-    hooks:
-      pre: |
-        make clean
-        make deps
-        go generate ./...
     main: ./cmd/kilt-installer
     dir: installer
     binary: kilt
@@ -20,11 +17,17 @@ builds:
       - darwin
 archives:
   - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
+      darwin: macos
+      linux: linux
+      windows: windows
+      386: x86
       amd64: x86_64
+    name_template: "kilt-installer-{{ .Os }}-{{ .Arch }}"
+    format: binary
+release:
+  extra_files:
+    - glob: ./runtimes/cloudformation/kilt.zip
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:

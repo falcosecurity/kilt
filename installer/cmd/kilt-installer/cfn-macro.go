@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"io"
 	"os"
 
@@ -30,7 +31,7 @@ func initializeAwsBucket(cfg aws.Config) (string, error) {
 	if err != nil {
 		return "", cli.Exit("could not compute bucket name: "+err.Error(), 1)
 	}
-	err = util.EnsureBucketExists(bucket, nil)
+	err = util.EnsureBucketExists(bucket, s3.NewFromConfig(cfg))
 	if err != nil {
 		return "", cli.Exit("could not ensure existence of kilt s3 bucket: " + err.Error(), 1)
 	}
@@ -143,6 +144,7 @@ func registerCfnMacro() []*cli.Command {
 						},
 					},
 					Action: func(c *cli.Context) error {
+						cfg.Region = c.String("region")
 						if c.Args().Len() != 2 {
 							fmt.Printf("you need to specify 2 arguments to install\n")
 							return cli.ShowAppHelp(c)

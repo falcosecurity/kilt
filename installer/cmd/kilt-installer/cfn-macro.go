@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"io"
 	"os"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/urfave/cli/v2"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	cfnmacro "github.com/falcosecurity/kilt/installer/runtimes/cfn-macro"
 	"github.com/falcosecurity/kilt/installer/util"
 )

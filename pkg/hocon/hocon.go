@@ -46,12 +46,9 @@ func (k *KiltHocon) prepareFullStringConfig(info *kilt.TargetInfo) (*configurati
 		return nil, fmt.Errorf("could not serialize info: %w", err)
 	}
 
-	fmt.Println("ANTANI", string(rawVars), "ANTANI")
 	configString := "original:" + string(rawVars) + "\n" +
 		"config:" + k.config + "\n" +
 		defaults + k.definition
-
-	fmt.Println("ANTANI", string(configString), "ANTANI")
 
 	return configuration.ParseString(configString), nil
 }

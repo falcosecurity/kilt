@@ -40,6 +40,7 @@ func HandleRequest(configuration *cfnpatcher.Configuration, ctx context.Context,
 	if err != nil {
 		return MacroOutput{event.RequestID, "failure", result}, err
 	}
+	log.Info().Str("template", string(result)).Msg("processing complete")
 	return MacroOutput{event.RequestID, "success", result}, nil
 }
 

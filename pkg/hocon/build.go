@@ -13,7 +13,13 @@ func extractBuild(config *configuration.Config) (*kilt.Build, error) {
 
 	b.Image = config.GetString("build.image")
 	b.EntryPoint = config.GetStringList("build.entry_point")
+	if b.EntryPoint == nil {
+		b.EntryPoint = make([]string, 0)
+	}
 	b.Command = config.GetStringList("build.command")
+	if b.Command == nil {
+		b.Command = make([]string, 0)
+	}
 
 	b.EnvironmentVariables = extractToStringMap(config, "build.environment_variables")
 

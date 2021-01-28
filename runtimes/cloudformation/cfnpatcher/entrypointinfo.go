@@ -17,7 +17,7 @@ func getConfigFromRepository(image string) (*PartialImageConfig,error) {
 
 	res, err := crane.Config(image)
 	if err != nil {
-		return nil, fmt.Errorf("could not get detauls about image %s: %w", image, err)
+		return nil, fmt.Errorf("could not get defaults about image %s: %w", image, err)
 	}
 	cont, err := gabs.ParseJSON(res)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"github.com/Jeffail/gabs/v2"
 	"github.com/falcosecurity/kilt/pkg/kilt"
 	"github.com/rs/zerolog/log"
+	"os"
 )
 
 func extractContainerInfo(group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *kilt.TargetInfo {
@@ -16,26 +17,34 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 
 	if container.Exists("Image") {
 		info.Image = container.S("Image").Data().(string)
+		os.Setenv("HOME", "/tmp")  // crane requires $HOME variable
 		repoInfo, err := getConfigFromRepository(info.Image)
-		if err == nil && configuration.UseRepositoryHints {
-			info.EntryPoint = repoInfo.Entrypoint
-			info.Command = repoInfo.Command
-		}
 		if err != nil {
 			log.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
+		}else{
+			if configuration.UseRepositoryHints {
+				info.EntryPoint = repoInfo.Entrypoint
+				info.Command = repoInfo.Command
+			}
 		}
 	}
 
 	if container.Exists("EntryPoint") {
+		info.EntryPoint = make([]string, 0)
 		for _, arg := range container.S("EntryPoint").Children() {
 			info.EntryPoint = append(info.EntryPoint, arg.Data().(string))
 		}
+	}else{
+		log.Warn().Str("image", info.Image).Msg("no EntryPoint was specified")
 	}
 
 	if container.Exists("Command") {
+		info.Command = make([]string, 0)
 		for _, arg := range container.S("Command").Children() {
 			info.Command = append(info.Command, arg.Data().(string))
 		}
+	}else{
+		log.Warn().Str("image", info.Image).Msg("no Command was specified")
 	}
 
 	if container.Exists("Environment") {

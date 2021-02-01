@@ -1,0 +1,2 @@
+debug-bridge:
+	go build .

@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/google/go-containerregistry/pkg/crane"
+	"fmt"
 	"os"
+
+	"github.com/falcosecurity/kilt/runtimes/cloudformation/cfnpatcher"
 )
 
 func main() {
@@ -10,9 +12,10 @@ func main() {
 		println("needs 1 argument: image")
 		return
 	}
-	res, err := crane.Config(os.Args[1])
+
+	res, err := cfnpatcher.GetConfigFromRepository(os.Args[1])
 	if err != nil {
 		panic(err)
 	}
-	println(string(res))
+	fmt.Printf("%+v\n", res)
 }

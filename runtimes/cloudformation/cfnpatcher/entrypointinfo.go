@@ -12,7 +12,7 @@ type PartialImageConfig struct {
 	Command []string
 }
 
-func getConfigFromRepository(image string) (*PartialImageConfig,error) {
+func GetConfigFromRepository(image string) (*PartialImageConfig,error) {
 	ic := new(PartialImageConfig)
 
 	res, err := crane.Config(image)
@@ -36,7 +36,7 @@ func getConfigFromRepository(image string) (*PartialImageConfig,error) {
 	if cont.Exists("config", "Cmd") {
 		for _, v := range cont.S("config", "Cmd").Children() {
 			if a, ok := v.Data().(string); ok {
-				ic.Command = append(ic.Entrypoint, a)
+				ic.Command = append(ic.Command, a)
 			}
 		}
 	}else{

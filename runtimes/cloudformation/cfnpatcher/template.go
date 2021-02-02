@@ -18,7 +18,7 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 	if container.Exists("Image") {
 		info.Image = container.S("Image").Data().(string)
 		os.Setenv("HOME", "/tmp")  // crane requires $HOME variable
-		repoInfo, err := getConfigFromRepository(info.Image)
+		repoInfo, err := GetConfigFromRepository(info.Image)
 		if err != nil {
 			log.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
 		}else{

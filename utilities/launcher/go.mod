@@ -1,3 +1,3 @@
-module github.com/admiral0/kilt-tests/launcher
+module github.com/falcosecurity/kilt/utilities/launcher
 
 go 1.14

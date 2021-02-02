@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/admiral0/kilt-tests/logshipper/cwlogger"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"os"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+
+	"github.com/falcosecurity/kilt/utilities/logshipper/cwlogger"
 )
 
 func main() {

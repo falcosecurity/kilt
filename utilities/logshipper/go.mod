@@ -1,4 +1,4 @@
-module github.com/admiral0/kilt-tests/logshipper
+module github.com/falcosecurity/kilt/utilities/logshipper
 
 go 1.14
 

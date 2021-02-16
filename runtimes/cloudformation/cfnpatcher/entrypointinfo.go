@@ -2,8 +2,8 @@ package cfnpatcher
 
 import (
 	"fmt"
-	"github.com/Jeffail/gabs/v2"
 
+	"github.com/Jeffail/gabs/v2"
 	"github.com/google/go-containerregistry/pkg/crane"
 )
 
@@ -30,17 +30,14 @@ func GetConfigFromRepository(image string) (*PartialImageConfig,error) {
 				ic.Entrypoint = append(ic.Entrypoint, a)
 			}
 		}
-	}else{
-		return nil, fmt.Errorf("image %s does not have entrypoint specified in config - possibly broken config", image)
 	}
+
 	if cont.Exists("config", "Cmd") {
 		for _, v := range cont.S("config", "Cmd").Children() {
 			if a, ok := v.Data().(string); ok {
 				ic.Command = append(ic.Command, a)
 			}
 		}
-	}else{
-		return nil, fmt.Errorf("image %s does not have command specified in config - possibly broken config", image)
 	}
 
 	return ic, nil

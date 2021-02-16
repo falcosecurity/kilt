@@ -1,10 +1,12 @@
 package cfnpatcher
 
 import (
-	"github.com/Jeffail/gabs/v2"
-	"github.com/falcosecurity/kilt/pkg/kilt"
-	"github.com/rs/zerolog/log"
 	"os"
+
+	"github.com/Jeffail/gabs/v2"
+	"github.com/rs/zerolog/log"
+
+	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
 func extractContainerInfo(group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *kilt.TargetInfo {
@@ -23,8 +25,12 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 			log.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
 		}else{
 			if configuration.UseRepositoryHints {
-				info.EntryPoint = repoInfo.Entrypoint
-				info.Command = repoInfo.Command
+				if info.EntryPoint != nil {
+					info.EntryPoint = repoInfo.Entrypoint
+				}
+				if info.Command != nil {
+					info.Command = repoInfo.Command
+				}
 			}
 		}
 	}

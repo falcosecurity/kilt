@@ -1,4 +1,4 @@
-module github.com/falcosecurity/kilt/utilities/debug-bridge
+module github.com/falcosecurity/kilt/utilities/debug-bridge/debug-bridge
 
 go 1.15
 

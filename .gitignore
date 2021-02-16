@@ -2,7 +2,7 @@
 /utilities/launcher/launcher
 /utilities/logshipper/logshipper
 /utilities/waitforever/waitforever
-/utilities/debug-bridge/debug-bridge
+/utilities/debug-bridge/debug-bridge/debug-bridge
 
 /installer/artifacts
 /installer/kilt

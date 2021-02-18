@@ -1,6 +1,7 @@
 package cfnpatcher
 
 import (
+	"context"
 	"os"
 
 	"github.com/Jeffail/gabs/v2"
@@ -9,8 +10,9 @@ import (
 	"github.com/falcosecurity/kilt/pkg/kilt"
 )
 
-func extractContainerInfo(group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *kilt.TargetInfo {
+func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *kilt.TargetInfo {
 	info := new(kilt.TargetInfo)
+	l := log.Ctx(ctx)
 
 	info.ContainerName = container.S("Name").Data().(string)
 	info.ContainerGroupName = groupName
@@ -22,9 +24,10 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 		os.Setenv("HOME", "/tmp")  // crane requires $HOME variable
 		repoInfo, err := GetConfigFromRepository(info.Image)
 		if err != nil {
-			log.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
+			l.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
 		}else{
 			if configuration.UseRepositoryHints {
+				l.Info().Str("image", info.Image).Msgf("extracted info from remote repository: %+v", repoInfo)
 				if info.EntryPoint != nil {
 					info.EntryPoint = repoInfo.Entrypoint
 				}
@@ -41,7 +44,7 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 			info.EntryPoint = append(info.EntryPoint, arg.Data().(string))
 		}
 	}else{
-		log.Warn().Str("image", info.Image).Msg("no EntryPoint was specified")
+		l.Warn().Str("image", info.Image).Msg("no EntryPoint was specified")
 	}
 
 	if container.Exists("Command") {
@@ -50,7 +53,7 @@ func extractContainerInfo(group *gabs.Container, groupName string, container *ga
 			info.Command = append(info.Command, arg.Data().(string))
 		}
 	}else{
-		log.Warn().Str("image", info.Image).Msg("no Command was specified")
+		l.Warn().Str("image", info.Image).Msg("no Command was specified")
 	}
 
 	if container.Exists("Environment") {

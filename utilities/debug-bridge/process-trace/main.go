@@ -90,7 +90,7 @@ func statefulProcessInfo() func(ts time.Time, p *process.Process)*ProcessInfo {
 
 		ppid, _ := p.Ppid()
 		memInfo, err := p.MemoryInfo()
-		if err!= nil {
+		if err != nil {
 			fmt.Printf("error retrieving mem stats for pid %d - %s", p.Pid, err.Error())
 			memInfo = &process.MemoryInfoStat{}
 		}

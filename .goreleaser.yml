@@ -1,7 +1,7 @@
 
 before:
   hooks:
-    - make -C runtimes/cloudformation kilt.zip
+    - make -C runtimes/cloudformation clean kilt.zip
     - make -C installer deps
     - go get github.com/markbates/pkger/cmd/pkger
     - go generate installer/generate.go

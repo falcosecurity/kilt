@@ -28,10 +28,10 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 		}else{
 			if configuration.UseRepositoryHints {
 				l.Info().Str("image", info.Image).Msgf("extracted info from remote repository: %+v", repoInfo)
-				if info.EntryPoint != nil {
+				if repoInfo.Entrypoint != nil {
 					info.EntryPoint = repoInfo.Entrypoint
 				}
-				if info.Command != nil {
+				if repoInfo.Command != nil {
 					info.Command = repoInfo.Command
 				}
 			}

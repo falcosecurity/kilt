@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"text/template"
 	"time"
 
@@ -51,13 +52,16 @@ func GetBucketName(accountId string, region string) (string, error) {
 	return buf.String(), nil
 }
 
-func EnsureBucketExists(bucketName string, s3Client *s3.Client) error {
+func EnsureBucketExists(bucketName string, region string, s3Client *s3.Client) error {
 	_, err := s3Client.HeadBucket(context.Background(), &s3.HeadBucketInput{
 		Bucket: &bucketName,
 	})
 	if err != nil {
 		_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
 			Bucket: &bucketName,
+			CreateBucketConfiguration: &types.CreateBucketConfiguration{
+				LocationConstraint: types.BucketLocationConstraint(region),
+			},
 		})
 		if err != nil {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)

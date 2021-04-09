@@ -37,16 +37,16 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(ctx, resource, name, container, configuration)
 			l.Info().Msgf("extracted info for container: %+v", info)
-			if shouldSkip(info, configuration, hints) {
+			if shouldSkip(info.TargetInfo, configuration, hints) {
 				l.Info().Msgf("skipping container due to hints in tags")
 				continue
 			}
-			patch, err := k.Build(info)
+			patch, err := k.Build(info.TargetInfo)
 			if err != nil {
 				return nil, fmt.Errorf("could not construct kilt patch: %w", err)
 			}
 			l.Info().Msgf("created patch for container: %v", patch)
-			err = applyContainerDefinitionPatch(l.WithContext(ctx), container, patch)
+			err = applyContainerDefinitionPatch(l.WithContext(ctx), container, patch, info)
 			if err != nil {
 				l.Warn().Str("resource", name).Err(err).Msg("skipped patching container in task definition")
 			} else {
@@ -68,18 +68,46 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	return resource, nil
 }
 
-func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Container, patch *kilt.Build) error {
+func postPatchReplace(patched []string, original []string, parallel []*gabs.Container) []*gabs.Container {
+	value := make([]*gabs.Container, 0)
+	for i, j := 0, 0; i < len(patched); i++ {
+		toAssign := gabs.New()
+		toAssign, _ = toAssign.Set(patched[i])
+		if patched[i] == original[j] {
+			if parallel[j] != nil {
+				toAssign = parallel[j]
+			}
+			j++
+		}
+		value = append(value, toAssign)
+	}
+	return value
+}
+
+func postPatchSelect(patched string, previous string, original *gabs.Container)  interface{} {
+	if patched == previous && original != nil {
+		return original
+	}
+	return patched
+}
+
+func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Container, patch *kilt.Build, cfnInfo *TemplateInfo) error {
 	l := log.Ctx(ctx)
 
-	_, err := container.Set(patch.EntryPoint, "EntryPoint")
+	finalEntryPoint := postPatchReplace(patch.EntryPoint, cfnInfo.TargetInfo.EntryPoint, cfnInfo.EntryPoint)
+	finalCommand := postPatchReplace(patch.Command, cfnInfo.TargetInfo.Command, cfnInfo.Command)
+
+	_, err := container.Set(finalEntryPoint, "EntryPoint")
 	if err != nil {
 		return fmt.Errorf("could not set EntryPoint: %w", err)
 	}
-	_, err = container.Set(patch.Command, "Command")
+	_, err = container.Set(finalCommand, "Command")
 	if err != nil {
 		return fmt.Errorf("could not set Command: %w", err)
 	}
-	_, err = container.Set(patch.Image, "Image")
+
+
+	_, err = container.Set(postPatchSelect(patch.Image, cfnInfo.TargetInfo.Image, cfnInfo.Image), "Image")
 	if err != nil {
 		return fmt.Errorf("could not set Command: %w", err)
 	}
@@ -116,9 +144,13 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 	for k, v := range patch.EnvironmentVariables {
-		keyValue := make(map[string]string)
+		keyValue := make(map[string]interface{})
 		keyValue["Name"] = k
 		keyValue["Value"] = v
+		if v == cfnInfo.TargetInfo.EnvironmentVariables[k] && cfnInfo.EnvironmentVariables[k] != nil {
+			keyValue["Value"] = cfnInfo.EnvironmentVariables[k]
+		}
+
 		_, err = container.Set(keyValue, "Environment", "-")
 
 		if err != nil {

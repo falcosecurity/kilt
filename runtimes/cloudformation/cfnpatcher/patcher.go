@@ -137,10 +137,12 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 
-	_, err = container.Set([]interface{}{}, "Environment")
+	if len(patch.EnvironmentVariables) > 0 {
+		_, err = container.Set([]interface{}{}, "Environment")
 
-	if err != nil {
+		if err != nil {
 		return fmt.Errorf("could not add environment variable container: %w", err)
+	}
 	}
 
 	for k, v := range patch.EnvironmentVariables {

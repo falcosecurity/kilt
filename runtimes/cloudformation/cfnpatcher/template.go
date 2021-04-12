@@ -105,7 +105,7 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 	if group.Exists("Properties", "Tags") {
 		for _, tag := range group.S("Properties", "Tags").Children() {
 			if tag.Exists("Key") && tag.Exists("Value") {
-				k, ok := tag.S("key").Data().(string)
+				k, ok := tag.S("Key").Data().(string)
 				if !ok {
 					l.Fatal().Str("Fragment", tag.String()).Str("TaskDefinition", groupName).Msg("Tags has an unsupported key type")
 				}

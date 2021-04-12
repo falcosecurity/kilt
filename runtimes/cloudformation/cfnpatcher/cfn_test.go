@@ -27,6 +27,9 @@ var defaultTests = [...]string{
 
 	"patching/entrypoint",
 	"patching/command",
+	"patching/ref",
+	"patching/ref_command",
+	"patching/ref_env",
 	"patching/volumes_from",
 	"patching/tags",
 }

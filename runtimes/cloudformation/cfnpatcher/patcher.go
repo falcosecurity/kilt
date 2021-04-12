@@ -70,10 +70,11 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 
 func postPatchReplace(patched []string, original []string, parallel []*gabs.Container) []*gabs.Container {
 	value := make([]*gabs.Container, 0)
+	originalLen := len(original)
 	for i, j := 0, 0; i < len(patched); i++ {
 		toAssign := gabs.New()
 		toAssign, _ = toAssign.Set(patched[i])
-		if patched[i] == original[j] {
+		if j < originalLen && patched[i] == original[j] {
 			if parallel[j] != nil {
 				toAssign = parallel[j]
 			}
@@ -136,13 +137,12 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 
-	if !(container.Exists("Environment") || len(patch.EnvironmentVariables) == 0) {
-		_, err = container.Set([]interface{}{}, "Environment")
+	_, err = container.Set([]interface{}{}, "Environment")
 
-		if err != nil {
-			return fmt.Errorf("could not add environment variable container: %w", err)
-		}
+	if err != nil {
+		return fmt.Errorf("could not add environment variable container: %w", err)
 	}
+
 	for k, v := range patch.EnvironmentVariables {
 		keyValue := make(map[string]interface{})
 		keyValue["Name"] = k

@@ -1,6 +1,6 @@
 module github.com/falcosecurity/kilt/runtimes/cloudformation
 
-go 1.14
+go 1.16
 
 require (
 	github.com/Jeffail/gabs/v2 v2.6.0
@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go v1.34.27
 	github.com/falcosecurity/kilt/pkg v0.0.0-20201012153322-cfbae90c1fbc
 	github.com/google/go-containerregistry v0.4.0
-	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/onsi/gomega v1.10.2 // indirect

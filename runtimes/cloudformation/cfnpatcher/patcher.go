@@ -36,7 +36,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(ctx, resource, name, container, configuration)
-			l.Info().Msgf("extracted info for container: %+v", info)
+			l.Info().Msgf("extracted info for container: %+v %+v", info.TargetInfo, info)
 			if shouldSkip(info.TargetInfo, configuration, hints) {
 				l.Info().Msgf("skipping container due to hints in tags")
 				continue

@@ -59,9 +59,11 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 				l.Info().Str("image", info.Image).Msgf("extracted info from remote repository: %+v", repoInfo)
 				if repoInfo.Entrypoint != nil {
 					info.EntryPoint = repoInfo.Entrypoint
+					cfnInfo.EntryPoint = make([]*gabs.Container, len(info.EntryPoint))
 				}
 				if repoInfo.Command != nil {
 					info.Command = repoInfo.Command
+					cfnInfo.Command = make([]*gabs.Container, len(info.Command))
 				}
 			}
 		}
@@ -69,6 +71,7 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 
 	if container.Exists("EntryPoint") {
 		info.EntryPoint = make([]string, 0)
+		cfnInfo.EntryPoint = make([]*gabs.Container,0)
 		for _, arg := range container.S("EntryPoint").Children() {
 			passthrough, templateVal := GetValueFromTemplate(arg)
 			cfnInfo.EntryPoint = append(cfnInfo.EntryPoint, templateVal)
@@ -80,6 +83,7 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 
 	if container.Exists("Command") {
 		info.Command = make([]string, 0)
+		cfnInfo.Command = make([]*gabs.Container,0)
 		for _, arg := range container.S("Command").Children() {
 			passthrough, templateVal := GetValueFromTemplate(arg)
 			cfnInfo.Command = append(cfnInfo.Command, templateVal)

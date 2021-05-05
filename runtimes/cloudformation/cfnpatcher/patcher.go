@@ -137,7 +137,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		}
 	}
 
-	if len(patch.EnvironmentVariables) > 0 {
+	if len(patch.EnvironmentVariables) > 0 && !container.Exists("Environment") {
 		_, err = container.Set([]interface{}{}, "Environment")
 
 		if err != nil {

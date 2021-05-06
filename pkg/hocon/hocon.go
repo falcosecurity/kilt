@@ -14,7 +14,6 @@ build {
 	entry_point: ${original.entry_point}
 	command: ${original.command}
 	image: ${original.image}
-	environment_variables: ${original.environment_variables}
 
 	mount: []
 }
@@ -45,10 +44,12 @@ func (k *KiltHocon) prepareFullStringConfig(info *kilt.TargetInfo) (*configurati
 	if err != nil {
 		return nil, fmt.Errorf("could not serialize info: %w", err)
 	}
+	rawEnv, _ := json.Marshal(info.EnvironmentVariables) // we would fail at info step
 
 	configString := "original:" + string(rawVars) + "\n" +
 		"config:" + k.config + "\n" +
-		defaults + k.definition
+		defaults + "build.environment_variables: " + string(rawEnv) + "\n" +
+		k.definition
 
 	return configuration.ParseString(configString), nil
 }

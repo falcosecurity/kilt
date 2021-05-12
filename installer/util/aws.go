@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"text/template"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -57,10 +58,17 @@ func EnsureBucketExists(bucketName string, region string, s3Client *s3.Client) e
 		Bucket: &bucketName,
 	})
 	if err != nil {
+		// due to s3 treating us-east-1 in a special way - we don't specify bucket location constraint when
+		// creating a bucket there
+		s3Region := region
+		if s3Region == "us-east-1" {
+			s3Region = ""
+		}
+
 		_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
 			Bucket: &bucketName,
 			CreateBucketConfiguration: &types.CreateBucketConfiguration{
-				LocationConstraint: types.BucketLocationConstraint(region),
+				LocationConstraint: types.BucketLocationConstraint(s3Region),
 			},
 		})
 		if err != nil {

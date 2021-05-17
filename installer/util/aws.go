@@ -58,19 +58,26 @@ func EnsureBucketExists(bucketName string, region string, s3Client *s3.Client) e
 		Bucket: &bucketName,
 	})
 	if err != nil {
-		// due to s3 treating us-east-1 in a special way - we don't specify bucket location constraint when
-		// creating a bucket there
-		s3Region := region
-		if s3Region == "us-east-1" {
-			s3Region = ""
+		found := false
+		s3Region := types.BucketLocationConstraint(region)
+		for _, r := range types.BucketLocationConstraint("").Values() {
+			if s3Region == r {
+				found = true
+			}
+		}
+		if found {
+			_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
+				Bucket: &bucketName,
+				CreateBucketConfiguration: &types.CreateBucketConfiguration{
+					LocationConstraint: s3Region,
+				},
+			})
+		}else {
+			_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
+				Bucket: &bucketName,
+			})
 		}
 
-		_, err = s3Client.CreateBucket(context.Background(), &s3.CreateBucketInput{
-			Bucket: &bucketName,
-			CreateBucketConfiguration: &types.CreateBucketConfiguration{
-				LocationConstraint: types.BucketLocationConstraint(s3Region),
-			},
-		})
 		if err != nil {
 			return fmt.Errorf("could not create S3 bucket %s: %w", bucketName, err)
 		}

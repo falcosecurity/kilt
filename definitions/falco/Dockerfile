@@ -6,7 +6,7 @@ FROM alpine:latest AS pdig-build
 RUN apk add g++ gcc cmake cmake make libtool elfutils-dev libelf-static linux-headers git
 RUN mkdir /source
 RUN git clone https://github.com/falcosecurity/pdig /source/pdig
-RUN git clone https://github.com/draios/sysdig /source/sysdig
+RUN git clone https://github.com/falcosecurity/libs /source/libs
 RUN mkdir /source/pdig/build
 RUN cd /source/pdig/build && cmake -DMUSL_OPTIMIZED_BUILD=True ..
 RUN cd /source/pdig/build && make

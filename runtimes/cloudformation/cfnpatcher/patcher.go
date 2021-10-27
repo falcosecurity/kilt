@@ -57,7 +57,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 				containers[appendResource.Name] = appendResource
 			}
 		}
-		err := appendContainers(resource, containers, configuration.ImageAuthSecret)
+		err := appendContainers(resource, containers, configuration.ImageAuthSecret, configuration.LogGroup, name)
 		if err != nil {
 			return nil, fmt.Errorf("could not append container: %w", err)
 		}
@@ -187,7 +187,7 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	return nil
 }
 
-func appendContainers(resource *gabs.Container, containers map[string]kilt.BuildResource, imageAuth string) error {
+func appendContainers(resource *gabs.Container, containers map[string]kilt.BuildResource, imageAuth string, logGroup string, name string) error {
 	for _, inject := range containers {
 		appended := map[string]interface{}{
 			"Name":       inject.Name,
@@ -199,10 +199,27 @@ func appendContainers(resource *gabs.Container, containers map[string]kilt.Build
 				"CredentialsParameter": imageAuth,
 			}
 		}
+		appended["LogConfiguration"] = prepareLogConfiguration(name, logGroup)
 		_, err := resource.Set(appended, "Properties", "ContainerDefinitions", "-")
 		if err != nil {
 			return fmt.Errorf("could not inject %s: %w", inject.Name, err)
 		}
 	}
 	return nil
+}
+
+func prepareLogConfiguration(taskName string, logGroup string) map[string]interface{} {
+	// assuming that all given log configurations are for the awslogs driver
+	config := map[string]interface{}{
+		"LogDriver": "awslogs",
+		"Options": map[string]interface{}{
+			"awslogs-region": map[string]interface{}{
+				"Ref": "AWS::Region",
+			},
+			"awslogs-group":         logGroup,
+			"awslogs-stream-prefix": taskName,
+		},
+	}
+
+	return config
 }

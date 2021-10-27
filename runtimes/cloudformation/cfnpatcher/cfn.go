@@ -14,6 +14,7 @@ type Configuration struct {
 	OptIn              bool
 	RecipeConfig       string
 	UseRepositoryHints bool
+	LogGroup           string
 }
 
 type InstrumentationHints struct {

@@ -199,7 +199,9 @@ func appendContainers(resource *gabs.Container, containers map[string]kilt.Build
 				"CredentialsParameter": imageAuth,
 			}
 		}
-		appended["LogConfiguration"] = prepareLogConfiguration(name, logGroup)
+		if len(logGroup) > 0 {
+			appended["LogConfiguration"] = prepareLogConfiguration(name, logGroup)
+		}
 		_, err := resource.Set(appended, "Properties", "ContainerDefinitions", "-")
 		if err != nil {
 			return fmt.Errorf("could not inject %s: %w", inject.Name, err)

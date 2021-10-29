@@ -119,3 +119,38 @@ func TestPatching(t *testing.T) {
 		})
 	}
 }
+
+func TestPatchingForLogGroup(t *testing.T) {
+	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
+
+	tests := []struct {
+		Name   string
+		Config Configuration
+	}{
+		{
+			"patching/log_group_empty",
+			Configuration{
+				Kilt:               defaultConfig,
+				OptIn:              false,
+				RecipeConfig:       "{}",
+				UseRepositoryHints: false,
+			},
+		},
+		{
+			"patching/log_group",
+			Configuration{
+				Kilt:               defaultConfig,
+				OptIn:              false,
+				RecipeConfig:       "{}",
+				UseRepositoryHints: false,
+				LogGroup:           "test_logs",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			runTest(t, test.Name, l.WithContext(context.Background()), test.Config)
+		})
+	}
+}

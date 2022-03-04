@@ -32,6 +32,7 @@ var defaultTests = [...]string{
 	"patching/ref_env",
 	"patching/volumes_from",
 	"patching/tags",
+	"patching/ecs_tf",
 }
 
 const defaultConfig = `
@@ -95,9 +96,9 @@ func TestPatchingOptIn(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
-					Kilt:         defaultConfig,
-					OptIn:        true,
-					RecipeConfig: "{}",
+					Kilt:               defaultConfig,
+					OptIn:              true,
+					RecipeConfig:       "{}",
 					UseRepositoryHints: false,
 				})
 		})
@@ -111,9 +112,9 @@ func TestPatching(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
-					Kilt:         defaultConfig,
-					OptIn:        false,
-					RecipeConfig: "{}",
+					Kilt:               defaultConfig,
+					OptIn:              false,
+					RecipeConfig:       "{}",
 					UseRepositoryHints: false,
 				})
 		})

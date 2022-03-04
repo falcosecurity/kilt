@@ -1,0 +1,67 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Dumb ECS Fargate Service",
+    "Parameters": {
+    },
+    "Resources": {
+      "TestApp": {
+        "Properties": {
+          "ContainerDefinitions": [
+            {
+              "Command": [
+                "watch",
+                "-n60",
+                "cat",
+                "/etc/shadow"
+              ],
+              "EntryPoint": [
+                "/kilt/run",
+                "--",
+                ""
+              ],
+              "Environment": [
+                {
+                  "Name": "pmet",
+                  "Value": "temp"
+                }
+              ],
+              "Image": "quay.io/rehman0288/busyboxplus:latest",
+              "LinuxParameters": {
+                "Capabilities": {
+                  "Add": [
+                    "SYS_PTRACE"
+                  ]
+                }
+              },
+              "VolumesFrom": [
+                {
+                  "ReadOnly": true,
+                  "SourceContainer": "KiltImage"
+                }
+              ],
+              "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "test-log-group",
+                  "awslogs-region": "us-east-1",
+                  "awslogs-stream-prefix": "ecs"
+                }
+              },
+              "name": "busybox"
+            },
+            {
+              "EntryPoint": [
+                "/kilt/wait"
+              ],
+              "Image": "KILT:latest",
+              "Name": "KiltImage"
+            }
+          ],
+          "RequiresCompatibilities": [
+            "FARGATE"
+          ]
+        },
+        "Type": "AWS::ECS::TaskDefinition"
+      }
+    }
+  }

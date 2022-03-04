@@ -67,13 +67,43 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 				}
 			}
 		}
+	} else if container.Exists("image") {
+		info.Image, cfnInfo.Image = GetValueFromTemplate(container.S("image"))
+
+		os.Setenv("HOME", "/tmp") // crane requires $HOME variable
+		repoInfo, err := GetConfigFromRepository(info.Image)
+		if err != nil {
+			l.Warn().Str("image", info.Image).Err(err).Msg("could not retrieve metadata from repository")
+		} else {
+			if configuration.UseRepositoryHints {
+				l.Info().Str("image", info.Image).Msgf("extracted info from remote repository: %+v", repoInfo)
+				if repoInfo.Entrypoint != nil {
+					info.EntryPoint = repoInfo.Entrypoint
+					cfnInfo.EntryPoint = make([]*gabs.Container, len(info.EntryPoint))
+				}
+				if repoInfo.Command != nil {
+					info.Command = repoInfo.Command
+					cfnInfo.Command = make([]*gabs.Container, len(info.Command))
+				}
+			}
+		}
 	}
 
 	if container.Exists("EntryPoint") {
 		info.EntryPoint = make([]string, 0)
-		cfnInfo.EntryPoint = make([]*gabs.Container,0)
+		cfnInfo.EntryPoint = make([]*gabs.Container, 0)
 		for _, arg := range container.S("EntryPoint").Children() {
 			passthrough, templateVal := GetValueFromTemplate(arg)
+
+			cfnInfo.EntryPoint = append(cfnInfo.EntryPoint, templateVal)
+			info.EntryPoint = append(info.EntryPoint, passthrough)
+		}
+	} else if container.Exists("entryPoint") {
+		info.EntryPoint = make([]string, 0)
+		cfnInfo.EntryPoint = make([]*gabs.Container, 0)
+		for _, arg := range container.S("entryPoint").Children() {
+			passthrough, templateVal := GetValueFromTemplate(arg)
+
 			cfnInfo.EntryPoint = append(cfnInfo.EntryPoint, templateVal)
 			info.EntryPoint = append(info.EntryPoint, passthrough)
 		}
@@ -83,8 +113,16 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 
 	if container.Exists("Command") {
 		info.Command = make([]string, 0)
-		cfnInfo.Command = make([]*gabs.Container,0)
+		cfnInfo.Command = make([]*gabs.Container, 0)
 		for _, arg := range container.S("Command").Children() {
+			passthrough, templateVal := GetValueFromTemplate(arg)
+			cfnInfo.Command = append(cfnInfo.Command, templateVal)
+			info.Command = append(info.Command, passthrough)
+		}
+	} else if container.Exists("command") {
+		info.Command = make([]string, 0)
+		cfnInfo.Command = make([]*gabs.Container, 0)
+		for _, arg := range container.S("command").Children() {
 			passthrough, templateVal := GetValueFromTemplate(arg)
 			cfnInfo.Command = append(cfnInfo.Command, templateVal)
 			info.Command = append(info.Command, passthrough)
@@ -95,14 +133,25 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 
 	if container.Exists("Environment") {
 		for _, env := range container.S("Environment").Children() {
-			k, ok := env.S("Name").Data().(string)
-			if ! ok {
-				l.Fatal().Str("Fragment", env.S("Name").String()).Str("TaskDefinition", groupName).Msg("Environment has an unsupported value type. Expected string")
-			}
-			passthrough, templateVal := GetValueFromTemplate(env.S("Value"))
+			if env.Exists("Name") && env.Exists("Value") {
+				k, ok := env.S("Name").Data().(string)
+				if !ok {
+					l.Fatal().Str("Fragment", env.S("Name").String()).Str("TaskDefinition", groupName).Msg("Environment has an unsupported value type. Expected string")
+				}
+				passthrough, templateVal := GetValueFromTemplate(env.S("Value"))
 
-			cfnInfo.EnvironmentVariables[k] = templateVal
-			info.EnvironmentVariables[k] = passthrough
+				cfnInfo.EnvironmentVariables[k] = templateVal
+				info.EnvironmentVariables[k] = passthrough
+			} else if env.Exists("name") && env.Exists("value") {
+				k, ok := env.S("name").Data().(string)
+				if !ok {
+					l.Fatal().Str("Fragment", env.S("name").String()).Str("TaskDefinition", groupName).Msg("Environment has an unsupported value type. Expected string")
+				}
+				passthrough, templateVal := GetValueFromTemplate(env.S("value"))
+
+				cfnInfo.EnvironmentVariables[k] = templateVal
+				info.EnvironmentVariables[k] = passthrough
+			}
 		}
 	}
 

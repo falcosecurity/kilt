@@ -1,0 +1,41 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Dumb ECS Fargate Service",
+    "Parameters": {},
+    "Resources": {
+        "TestApp": {
+            "Properties": {
+                "ContainerDefinitions": [
+                    {
+                        "image": "quay.io/rehman0288/busyboxplus:latest",
+                        "name": "busybox",
+                        "entryPoint": [
+                        "watch",
+                        "-n60",
+                        "cat",
+                        "/etc/shadow"
+                        ],
+                        "Environment": [
+                        {
+                            "name": "pmet",
+                            "value": "temp"
+                        }
+                        ],
+                        "logConfiguration": {
+                        "logDriver": "awslogs",
+                        "options": {
+                            "awslogs-group": "test-log-group",
+                            "awslogs-region": "us-east-1",
+                            "awslogs-stream-prefix": "ecs"
+                        }
+                        }
+                    }
+                ],
+                "RequiresCompatibilities": [
+                    "FARGATE"
+                ]
+            },
+            "Type": "AWS::ECS::TaskDefinition"
+        }
+    }
+}

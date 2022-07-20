@@ -1,10 +1,6 @@
 approvers:
   - admiral0
   - leodido
-  - fntlnz
   - gnosek
-reviewers:
-  - admiral0
-  - leodido
+emeritus_approvers:
   - fntlnz
-  - gnosek

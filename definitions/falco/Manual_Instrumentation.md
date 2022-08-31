@@ -1,6 +1,6 @@
 Most of these steps are performed automatically by [Kilt](https://github.com/falcosecurity/kilt). In case you want to roll your own solution or test it out manually use the following instructions.
 
-## Uploading sysdig instrumentation image onto personal aws account
+## Uploading Falco instrumentation image onto personal aws account
 In this example we're going to assume the target aws region to be us-east-1.
 
 ## Instrumenting manually an existing Task Definition

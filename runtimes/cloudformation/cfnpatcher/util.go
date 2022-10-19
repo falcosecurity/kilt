@@ -7,16 +7,27 @@ import (
 	"github.com/Jeffail/gabs/v2"
 )
 
-func getTags(template *gabs.Container) map[string]string {
-	tags := make(map[string]string)
-	if template.Exists("Properties", "Tags") {
-		for _, tag := range template.S("Properties", "Tags").Children() {
-			if tag.Exists("Key") && tag.Exists("Value") {
-				tags[tag.S("Key").Data().(string)] = tag.S("Value").Data().(string)
+func getOptTags(template *gabs.Container) map[string]string {
+	optTags := make(map[string]string)
+	if !template.Exists("Properties", "Tags") {
+		return optTags
+	}
+	for _, tag := range template.S("Properties", "Tags").Children() {
+		if tag.Exists("Key") && tag.Exists("Value") {
+			k, ok := tag.S("Key").Data().(string)
+			if !ok {
+				panic(fmt.Errorf("tag has an unsupported key type: %s", tag.String()))
+			}
+			if isOptTagKey(k) {
+				v, ok := tag.S("Value").Data().(string)
+				if !ok {
+					panic(fmt.Errorf("OptIn/OptOut tag %s has an unsupported value type: %s", k, v))
+				}
+				optTags[k] = v
 			}
 		}
 	}
-	return tags
+	return optTags
 }
 
 func exitErrorf(msg string, args ...interface{}) {

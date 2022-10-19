@@ -1,0 +1,29 @@
+{
+  "Resources": {
+    "taskdef": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Tags": [
+          {
+            "Key": "antani",
+            "Value": {"Ref": "Parameter"}
+          },
+          {
+            "Key": "captured_tag",
+            "Value": "somearg"
+          }
+        ],
+        "ContainerDefinitions": [
+          {
+            "Name": "app",
+            "Image": "busybox",
+            "Command": ["/bin/sh"]
+          }
+        ]
+      }
+    }
+  }
+}

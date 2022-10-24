@@ -44,7 +44,29 @@ func HandleRequest(configuration *cfnpatcher.Configuration, ctx context.Context,
 	return MacroOutput{event.RequestID, "success", result}, nil
 }
 
-func ConfigClosure() interface{} {
+func PatchLocalFile(configuration *cfnpatcher.Configuration, ctx context.Context, inputFile string) ([]byte, error) {
+	l := log.With().
+		Str("region", "local").
+		Logger()
+	loggerCtx := l.WithContext(ctx)
+
+	inputData, err := os.ReadFile(inputFile)
+	if err != nil {
+		l.Error().Err(err).Msgf("cannot read file %s", inputFile)
+		return nil, err
+	}
+
+	result, err := cfnpatcher.Patch(loggerCtx, configuration, inputData)
+	if err != nil {
+		l.Error().Err(err).Msg("failed to patch local file")
+		return nil, err
+	}
+
+	log.Info().Str("template", string(result)).Msg("processing complete")
+	return result, nil
+}
+
+func GetConfig() *cfnpatcher.Configuration {
 	definition := os.Getenv("KILT_DEFINITION")
 	definitionType := os.Getenv("KILT_DEFINITION_TYPE")
 	optIn := os.Getenv("KILT_OPT_IN")
@@ -77,6 +99,11 @@ func ConfigClosure() interface{} {
 		LogGroup:           logGroup,
 	}
 
+	return configuration
+}
+
+func ConfigClosure() interface{} {
+	configuration := GetConfig()
 	return func(ctx context.Context, event MacroInput) (MacroOutput, error) {
 		return HandleRequest(configuration, ctx, event)
 	}
@@ -84,5 +111,20 @@ func ConfigClosure() interface{} {
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	lambda.Start(ConfigClosure())
+
+	switch os.Getenv("KILT_MODE") {
+	case "local":
+		result, err := PatchLocalFile(GetConfig(), context.Background(), os.Getenv("KILT_SRC_TEMPLATE"))
+		if err != nil {
+			panic("cannot patch local file " + os.Getenv("KILT_SRC_TEMPLATE"))
+		}
+
+		err = os.WriteFile(os.Getenv("KILT_OUT_TEMPLATE"), result, 0644)
+		if err != nil {
+			panic("cannot write dst file " + os.Getenv("KILT_OUT_TEMPLATE"))
+		}
+
+	default:
+		lambda.Start(ConfigClosure())
+	}
 }

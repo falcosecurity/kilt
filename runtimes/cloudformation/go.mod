@@ -13,6 +13,7 @@ require (
 	github.com/onsi/gomega v1.10.2 // indirect
 	github.com/rs/zerolog v1.19.0
 	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect

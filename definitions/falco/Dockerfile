@@ -13,7 +13,6 @@ RUN cd /source/pdig/build && make
 
 FROM scratch
 COPY --from=falco /usr/bin/falco /vendor/falco/bin/falco
-COPY --from=falco /usr/share/falco/lua /vendor/falco/share/lua
 COPY --from=falco /etc /vendor/falco/etc
 COPY --from=pdig-build /source/pdig/build/pdig /vendor/falco/bin/pdig
 COPY --from=kilt-utils /kilt/waitforever /vendor/falco/bin/waitforever

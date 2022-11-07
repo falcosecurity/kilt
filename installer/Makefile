@@ -1,5 +1,5 @@
 installer: deps
-	go get github.com/markbates/pkger/cmd/pkger
+	go install github.com/markbates/pkger/cmd/pkger@latest
 	pkger -o cmd/kilt-installer
 	cd cmd/kilt-installer && CGO_ENABLED=0 go build .
 	@cp cmd/kilt-installer/kilt-installer kilt

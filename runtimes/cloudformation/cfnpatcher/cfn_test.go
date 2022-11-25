@@ -45,10 +45,33 @@ var defaultTests = [...]string{
 	"patching/volumes_from",
 }
 
+var parameterizedEnvarsTests = [...]string{
+	"patching/parameterize_env_add",
+	"patching/parameterize_env_merge",
+}
+
 const defaultConfig = `
 build {
 	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
 	command: [] ${?original.entry_point} ${?original.command}
+	mount: [
+		{
+			name: "KiltImage"
+			image: "KILT:latest"
+			volumes: ["/kilt"]
+			entry_point: ["/kilt/wait"]
+		}
+	]
+}
+`
+
+const parameterizeEnvarsConfig = `
+build {
+	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
+	command: [] ${?original.entry_point} ${?original.command}
+	environment_variables: {
+		"SO_LONG_AND_THANKS": "ForAllTheFish"
+	}
 	mount: [
 		{
 			name: "KiltImage"
@@ -76,13 +99,11 @@ func runTest(t *testing.T, name string, context context.Context, config Configur
 		return
 	}
 
-	differ := diff.New()
-	println(string(result))
-	d, err := differ.Compare(expected, result)
+	fmt.Printf("result: %s\n", result)
+	fmt.Printf("expected: %s\n", expected)
 
-	if err != nil {
-		t.Fatalf("failed to diff: %s", err.Error())
-	}
+	differ := diff.New()
+	d, err := differ.Compare(expected, result)
 
 	if d.Modified() {
 		var expectedJson map[string]interface{}
@@ -126,6 +147,36 @@ func TestPatching(t *testing.T) {
 					OptIn:        false,
 					RecipeConfig: "{}",
 					UseRepositoryHints: false,
+				})
+		})
+	}
+}
+
+func TestPatchingForParameterizingEnvars(t *testing.T) {
+	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
+
+	for _, testName := range defaultTests {
+		t.Run(testName, func(t *testing.T) {
+			runTest(t, testName, l.WithContext(context.Background()),
+				Configuration{
+					Kilt:         defaultConfig,
+					OptIn:        false,
+					RecipeConfig: "{}",
+					UseRepositoryHints: false,
+					ParameterizeEnvars: true,
+				})
+		})
+	}
+
+	for _, testName := range parameterizedEnvarsTests {
+		t.Run(testName, func(t *testing.T) {
+			runTest(t, testName, l.WithContext(context.Background()),
+				Configuration{
+					Kilt:         parameterizeEnvarsConfig,
+					OptIn:        false,
+					RecipeConfig: "{}",
+					UseRepositoryHints: false,
+					ParameterizeEnvars: true,
 				})
 		})
 	}
@@ -316,6 +367,110 @@ func TestGetOptTags(t *testing.T) {
 			if !eq {
 				assert.Fail(t, "maps do not match")
 			}
+		})
+	}
+}
+
+func TestGetParameterName(t *testing.T) {
+ 	tests := []struct {
+		name     string
+		expected string
+	}{
+		// No changes if there are no non-alphanumeric chars
+		{
+			name: `SOLONGANDTHANKSFORALLTHEFISH12345`,
+			expected: `SOLONGANDTHANKSFORALLTHEFISH12345`,
+		},
+		{
+			name: `solongandthanksforallthefish12345`,
+			expected: `solongandthanksforallthefish12345`,
+		},
+		{
+			name: `soLongAndThanksForAllTheFish12345`,
+			expected: `soLongAndThanksForAllTheFish12345`,
+		},
+		// Tries to make the parameter name more readable if there are non-alphanumeric chars
+		{
+			name: `SOLONGANDTHANKSFORALLTHEFISH_`,
+			expected: `solongandthanksforallthefish`,
+		},
+		{
+			name: `SOLONG_ANDTHANKSFORALLTHEFISH`,
+			expected: `solongAndthanksforallthefish`,
+		},
+		{
+			name: `SO_LONG_AND_THANKS_FOR_ALL_THE_FISH`,
+			expected: `soLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `_SO_LONG_AND_THANKS_FOR_ALL_THE_FISH_`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `__SO__LONG__AND__THANKS__FOR__ALL__THE__FISH__`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `solongandthanksforallthefish_`,
+			expected: `solongandthanksforallthefish`,
+		},
+		{
+			name: `solong_andthanksforallthefish`,
+			expected: `solongAndthanksforallthefish`,
+		},
+		{
+			name: `so_long_and_thanks_for_all_the_fish`,
+			expected: `soLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `_so_long_and_thanks_for_all_the_fish_`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `__so__long__and__thanks__for__all__the__fish__`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `soLong_AndThanksForAllTheFish`,
+			expected: `solongAndthanksforallthefish`,
+		},
+		{
+			name: `so_Long_And_Thanks_For_All_The_Fish`,
+			expected: `soLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `_so_Long_And_Thanks_For_All_The_Fish_`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		{
+			name: `__so__Long__And__Thanks__For__All__The__Fish__`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+		// Won't happen, actually
+		{
+			name: `soLong-ANDTHANKS_forAllTheFish___`,
+			expected: `solongAndthanksForallthefish`,
+		},
+		{
+			name: `soLong-ANDTHANKS-forAllTheFish!!!`,
+			expected: `solongAndthanksForallthefish`,
+		},
+		{
+			name: `soLong-ANDTHANKS-forAllTheFish!!!`,
+			expected: `solongAndthanksForallthefish`,
+		},
+		{
+			name: `soLongAndThanksForAllTheFish!!!`,
+			expected: `solongandthanksforallthefish`,
+		},
+		{
+			name: `***so___Long---And!!!Thanks???For+++All***The:::Fish|||`,
+			expected: `SoLongAndThanksForAllTheFish`,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, getParameterName(tc.name))
 		})
 	}
 }

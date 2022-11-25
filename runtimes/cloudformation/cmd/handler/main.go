@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/falcosecurity/kilt/runtimes/cloudformation/config"
 
@@ -74,6 +75,8 @@ func GetConfig() *cfnpatcher.Configuration {
 	recipeConfig := os.Getenv("KILT_RECIPE_CONFIG")
 	disableRepoHints := os.Getenv("KILT_DISABLE_REPO_HINTS")
 	logGroup := os.Getenv("KILT_LOG_GROUP")
+	parameterizeEnvars := os.Getenv("KILT_PARAMETERIZE_ENVARS")
+
 	var fullDefinition string
 	switch definitionType {
 	case config.S3:
@@ -97,6 +100,7 @@ func GetConfig() *cfnpatcher.Configuration {
 		RecipeConfig:       recipeConfig,
 		UseRepositoryHints: disableRepoHints == "",
 		LogGroup:           logGroup,
+		ParameterizeEnvars: strings.ToLower(parameterizeEnvars) == "true",
 	}
 
 	return configuration

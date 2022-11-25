@@ -15,6 +15,7 @@ type Configuration struct {
 	RecipeConfig       string
 	UseRepositoryHints bool
 	LogGroup           string
+	ParameterizeEnvars bool
 }
 
 type InstrumentationHints struct {
@@ -71,6 +72,11 @@ func Patch(ctx context.Context, configuration *Configuration, fragment []byte) (
 	if err != nil {
 		l.Error().Err(err).Msg("failed to parse input fragment")
 		return nil, err
+	}
+
+	if configuration.ParameterizeEnvars {
+		l.Info().Msg("parameterizing recipe envars")
+		applyParametersPatch(ctx, template, configuration)
 	}
 
 	for name, resource := range template.S("Resources").ChildrenMap() {

@@ -27,6 +27,17 @@ func shouldSkip(info *kilt.TargetInfo, configuration *Configuration, hints *Inst
 	return (configuration.OptIn && !isForceIncluded && !hints.HasGlobalInclude) || (!configuration.OptIn && isExcluded)
 }
 
+func applyParametersPatch(ctx context.Context, template *gabs.Container, configuration *Configuration) (*gabs.Container, error) {
+	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, configuration.RecipeConfig)
+	build, _ := k.Build(new(kilt.TargetInfo))
+	for k, v := range build.EnvironmentVariables {
+		keyStripped := getParameterName(k)
+		template.Set("String", "Parameters", keyStripped, "Type")
+		template.Set(v, "Parameters", keyStripped, "Default")
+	}
+	return template, nil
+}
+
 func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration, hints *InstrumentationHints) (*gabs.Container, error) {
 	l := log.Ctx(ctx)
 
@@ -46,7 +57,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 				return nil, fmt.Errorf("could not construct kilt patch: %w", err)
 			}
 			l.Info().Msgf("created patch for container: %v", patch)
-			err = applyContainerDefinitionPatch(l.WithContext(ctx), container, patch, info)
+			err = applyContainerDefinitionPatch(l.WithContext(ctx), container, patch, info, configuration)
 			if err != nil {
 				l.Warn().Str("resource", name).Err(err).Msg("skipped patching container in task definition")
 			} else {
@@ -92,7 +103,7 @@ func postPatchSelect(patched string, previous string, original *gabs.Container) 
 	return patched
 }
 
-func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Container, patch *kilt.Build, cfnInfo *TemplateInfo) error {
+func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Container, patch *kilt.Build, cfnInfo *TemplateInfo, configuration *Configuration) error {
 	l := log.Ctx(ctx)
 
 	finalEntryPoint := postPatchReplace(patch.EntryPoint, cfnInfo.TargetInfo.EntryPoint, cfnInfo.EntryPoint)
@@ -141,14 +152,21 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 		_, err = container.Set([]interface{}{}, "Environment")
 
 		if err != nil {
-		return fmt.Errorf("could not add environment variable container: %w", err)
-	}
+			return fmt.Errorf("could not add environment variable container: %w", err)
+		}
 	}
 
 	for k, v := range patch.EnvironmentVariables {
 		keyValue := make(map[string]interface{})
+
 		keyValue["Name"] = k
-		keyValue["Value"] = v
+
+		if _, ok := cfnInfo.EnvironmentVariables[k]; !ok && configuration.ParameterizeEnvars {
+			keyValue["Value"] = map[string]string{"Ref": getParameterName(k)}
+		} else {
+			keyValue["Value"] = v
+		}
+
 		if v == cfnInfo.TargetInfo.EnvironmentVariables[k] && cfnInfo.EnvironmentVariables[k] != nil {
 			keyValue["Value"] = cfnInfo.EnvironmentVariables[k]
 		}

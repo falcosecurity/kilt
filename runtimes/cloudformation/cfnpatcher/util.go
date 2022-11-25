@@ -3,9 +3,26 @@ package cfnpatcher
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/Jeffail/gabs/v2"
 )
+
+var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9][^\W_]?`)
+
+func getParameterName(envarName string) string {
+	// Use the envar name if it does not contain any non-alphanumeric chars
+	if found := nonAlphanumericRegex.MatchString(envarName); !found {
+		return envarName
+	}
+
+	// Otherwise, try to make it more readable, e.g. MY_AWESOME_ENVAR becomes myAwesomeEnvar
+	parameterName := nonAlphanumericRegex.ReplaceAllStringFunc(strings.ToLower(envarName), func(str string) string {
+		return strings.ToUpper(str[1:])
+	})
+	return parameterName
+}
 
 func getOptTags(template *gabs.Container) map[string]string {
 	optTags := make(map[string]string)

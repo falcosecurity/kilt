@@ -102,19 +102,13 @@ func GetConfig() *cfnpatcher.Configuration {
 	return configuration
 }
 
-func ConfigClosure() interface{} {
-	configuration := GetConfig()
-	return func(ctx context.Context, event MacroInput) (MacroOutput, error) {
-		return HandleRequest(configuration, ctx, event)
-	}
-}
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
+	configuration := GetConfig()
 	switch os.Getenv("KILT_MODE") {
 	case "local":
-		result, err := PatchLocalFile(GetConfig(), context.Background(), os.Getenv("KILT_SRC_TEMPLATE"))
+		result, err := PatchLocalFile(configuration, context.Background(), os.Getenv("KILT_SRC_TEMPLATE"))
 		if err != nil {
 			panic("cannot patch local file " + os.Getenv("KILT_SRC_TEMPLATE"))
 		}
@@ -125,6 +119,9 @@ func main() {
 		}
 
 	default:
-		lambda.Start(ConfigClosure())
+		lambda.Start(
+			func(ctx context.Context, event MacroInput) (MacroOutput, error) {
+				return HandleRequest(configuration, ctx, event)
+			})
 	}
 }

@@ -1,0 +1,39 @@
+{
+  "Resources": {
+    "willpatch": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Tags": [
+          {
+            "Key": "kilt-include-containers",
+            "Value": "app1:app2"
+          },
+          {
+            "Key": "sometag",
+            "Value": "antani"
+          }
+        ],
+        "ContainerDefinitions": [
+          {
+            "Name": "app1",
+            "Image": "busybox",
+            "EntryPoint": ["/bin/sh"]
+          },
+          {
+            "Name": "app2",
+            "Image": "busybox",
+            "EntryPoint": ["/bin/sh"]
+          },
+          {
+            "Name": "something-else",
+            "Image": "busybox",
+            "EntryPoint": ["/bin/sh"]
+          }
+        ]
+      }
+    }
+  }
+}

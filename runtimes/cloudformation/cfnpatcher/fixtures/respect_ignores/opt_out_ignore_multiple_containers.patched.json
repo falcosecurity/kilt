@@ -1,0 +1,70 @@
+{
+  "Resources": {
+    "willpatch": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Command": [
+              "/bin/sh"
+            ],
+            "EntryPoint": [
+              "/kilt/run",
+              "--",
+              ""
+            ],
+            "Image": "busybox",
+            "LinuxParameters": {
+              "Capabilities": {
+                "Add": [
+                  "SYS_PTRACE"
+                ]
+              }
+            },
+            "Name": "app",
+            "VolumesFrom": [
+              {
+                "ReadOnly": true,
+                "SourceContainer": "KiltImage"
+              }
+            ]
+          },
+          {
+            "EntryPoint": [
+              "/bin/sh"
+            ],
+            "Image": "busybox",
+            "Name": "nopatch1"
+          },
+          {
+            "EntryPoint": [
+              "/bin/sh"
+            ],
+            "Image": "busybox",
+            "Name": "nopatch2"
+          },
+          {
+            "EntryPoint": [
+              "/kilt/wait"
+            ],
+            "Image": "KILT:latest",
+            "Name": "KiltImage"
+          }
+        ],
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Tags": [
+          {
+            "Key": "antani",
+            "Value": "sbiribuda"
+          },
+          {
+            "Key": "kilt-ignore-containers",
+            "Value": "nopatch1:nopatch2"
+          }
+        ]
+      },
+      "Type": "AWS::ECS::TaskDefinition"
+    }
+  }
+}

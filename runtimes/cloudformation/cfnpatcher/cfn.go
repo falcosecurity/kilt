@@ -52,7 +52,7 @@ func extractContainersFromTag(tags map[string]string, tag string) []string {
 	containers := make([]string, 0)
 	containerList, hasIgnores := tags[tag]
 	if hasIgnores {
-		containers = strings.Split(containerList, ",")
+		containers = strings.Split(containerList, ":")
 	}
 	return containers
 }

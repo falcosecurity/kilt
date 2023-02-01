@@ -19,11 +19,11 @@ There are 2 modes of operation for the macro, both selected during install. *opt
 and *opt-out*. You can use the following tags to include or exclude pieces of your 
 task definition:
 
-* `kilt-include:<any-value>` - will apply instrumentation in opt-in mode of operation
-* `kilt-ignore:<any_value>` - will not apply instrumentation in opt-out mode of operation
-* `kilt-include-containers:containerA,ContainerB` - value is comma separated list of 
+* `"kilt-include": "<any-value>"` - will apply instrumentation in opt-in mode of operation
+* `"kilt-ignore": "<any_value>"` - will not apply instrumentation in opt-out mode of operation
+* `"kilt-include-containers": "containerA:ContainerB"` - value is a colon separated list of 
   container names. Will include only some contaiers in opt-in mode
-* `kilt-ignore-containers:containerA,containerB` - will exclude some containers in 
+* `"kilt-ignore-containers": "containerA:containerB"` - will exclude some containers in 
   opt-out mode
   
 

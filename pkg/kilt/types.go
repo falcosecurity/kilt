@@ -21,7 +21,7 @@ type BuildResource struct {
 	Image                string
 	Volumes              []string
 	EntryPoint           []string
-	EnvironmentVariables []interface{}
+	EnvironmentVariables []map[string]interface{}
 }
 
 type Build struct {

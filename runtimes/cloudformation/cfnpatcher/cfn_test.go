@@ -53,6 +53,7 @@ var parameterizedEnvarsTests = [...]string{
 }
 
 var sidecarEnvTests = [...]string{
+	"sidecar_env/overlap",
 	"sidecar_env/ref_env",
 	"sidecar_env/volumes_from",
 }

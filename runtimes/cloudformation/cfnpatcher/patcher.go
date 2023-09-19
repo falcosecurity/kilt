@@ -65,7 +65,17 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 			}
 
 			for _, appendResource := range patch.Resources {
+				existingSidecarVars := make(map[string]struct{})
+
+				for _, kv := range appendResource.EnvironmentVariables {
+					existingSidecarVars[kv["Name"].(string)] = struct{}{}
+				}
+
 				for k, v := range patch.EnvironmentVariables {
+					if _, ok := existingSidecarVars[k]; ok {
+						continue
+					}
+
 					keyValue := make(map[string]interface{})
 					keyValue["Name"] = k
 

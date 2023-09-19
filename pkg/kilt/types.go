@@ -17,10 +17,11 @@ type TargetInfo struct {
 }
 
 type BuildResource struct {
-	Name       string
-	Image      string
-	Volumes    []string
-	EntryPoint []string
+	Name                 string
+	Image                string
+	Volumes              []string
+	EntryPoint           []string
+	EnvironmentVariables []interface{}
 }
 
 type Build struct {

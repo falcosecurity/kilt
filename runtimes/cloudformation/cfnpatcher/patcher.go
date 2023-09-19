@@ -65,6 +65,24 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 			}
 
 			for _, appendResource := range patch.Resources {
+				for k, v := range patch.EnvironmentVariables {
+					keyValue := make(map[string]interface{})
+					keyValue["Name"] = k
+
+					if _, ok := info.EnvironmentVariables[k]; !ok && configuration.ParameterizeEnvars {
+						parameterRef := gabs.Container{}
+						parameterRef.Set(getParameterName(k), "Ref")
+						keyValue["Value"] = &parameterRef
+					} else {
+						keyValue["Value"] = v
+					}
+
+					if v == info.TargetInfo.EnvironmentVariables[k] && info.EnvironmentVariables[k] != nil {
+						keyValue["Value"] = info.EnvironmentVariables[k]
+					}
+
+					appendResource.EnvironmentVariables = append(appendResource.EnvironmentVariables, keyValue)
+				}
 				containers[appendResource.Name] = appendResource
 			}
 		}
@@ -211,6 +229,9 @@ func appendContainers(resource *gabs.Container, containers map[string]kilt.Build
 			"Name":       inject.Name,
 			"Image":      inject.Image,
 			"EntryPoint": inject.EntryPoint,
+		}
+		if len(inject.EnvironmentVariables) > 0 {
+			appended["Environment"] = inject.EnvironmentVariables
 		}
 		if len(imageAuth) > 0 {
 			appended["RepositoryCredentials"] = map[string]interface{}{

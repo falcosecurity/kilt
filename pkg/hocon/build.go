@@ -37,6 +37,18 @@ func extractBuild(config *configuration.Config) (*kilt.Build, error) {
 					EntryPoint: mount.GetKey("entry_point").GetStringList(),
 				}
 
+				sidecarEnv := mount.GetKey("environment_variables")
+				if sidecarEnv != nil && sidecarEnv.IsObject() {
+					obj := sidecarEnv.GetObject()
+					for k, v := range obj.Items() {
+						keyValue := make(map[string]interface{})
+						keyValue["Name"] = k
+						keyValue["Value"] = v.GetString()
+
+						resource.EnvironmentVariables = append(resource.EnvironmentVariables, keyValue)
+					}
+				}
+
 				if resource.Image == "" || len(resource.Volumes) == 0 || len(resource.EntryPoint) == 0 {
 					return nil, fmt.Errorf("error at build.mount.%d: image, volumes and entry_point are all required ", k)
 				}

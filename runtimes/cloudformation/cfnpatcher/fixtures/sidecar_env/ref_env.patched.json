@@ -1,0 +1,76 @@
+{
+  "Resources": {
+    "taskdef": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Command": [
+              "/bin/sh"
+            ],
+            "EntryPoint": [
+              "/kilt/run",
+              "--",
+              ""
+            ],
+            "Environment": [
+              {
+                "Name": "NAME",
+                "Value": {
+                  "Ref": "Parameter"
+                }
+              }
+            ],
+            "Image": "busybox",
+            "LinuxParameters": {
+              "Capabilities": {
+                "Add": [
+                  "SYS_PTRACE"
+                ]
+              }
+            },
+            "Name": "app",
+            "VolumesFrom": [
+              {
+                "ReadOnly": true,
+                "SourceContainer": "KiltImage"
+              }
+            ]
+          },
+          {
+            "EntryPoint": [
+              "/kilt/wait"
+            ],
+            "Environment": [
+              {
+                "Name": "MEANING_OF_LIFE",
+                "Value": "42"
+              },
+              {
+                "Name": "NAME",
+                "Value": {
+                  "Ref": "Parameter"
+                }
+              }
+            ],
+            "Image": "KILT:latest",
+            "Name": "KiltImage"
+          }
+        ],
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "Tags": [
+          {
+            "Key": "antani",
+            "Value": "sbiribuda"
+          },
+          {
+            "Key": "kiltinclude",
+            "Value": "itisignored"
+          }
+        ]
+      },
+      "Type": "AWS::ECS::TaskDefinition"
+    }
+  }
+}

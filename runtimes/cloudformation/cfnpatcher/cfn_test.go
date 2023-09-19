@@ -52,6 +52,11 @@ var parameterizedEnvarsTests = [...]string{
 	"patching/parameterize_env_merge",
 }
 
+var sidecarEnvTests = [...]string{
+	"sidecar_env/ref_env",
+	"sidecar_env/volumes_from",
+}
+
 const defaultConfig = `
 build {
 	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
@@ -80,6 +85,24 @@ build {
 			image: "KILT:latest"
 			volumes: ["/kilt"]
 			entry_point: ["/kilt/wait"]
+		}
+	]
+}
+`
+
+const sidecarEnvConfig = `
+build {
+	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
+	command: [] ${?original.entry_point} ${?original.command}
+	mount: [
+		{
+			name: "KiltImage"
+			image: "KILT:latest"
+			volumes: ["/kilt"]
+			entry_point: ["/kilt/wait"]
+			environment_variables: {
+				"MEANING_OF_LIFE": "42"
+			}
 		}
 	]
 }
@@ -146,6 +169,22 @@ func TestPatching(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
 					Kilt:               defaultConfig,
+					OptIn:              false,
+					RecipeConfig:       "{}",
+					UseRepositoryHints: false,
+				})
+		})
+	}
+}
+
+func TestPatchingSidecarEnv(t *testing.T) {
+	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
+
+	for _, testName := range sidecarEnvTests {
+		t.Run(testName, func(t *testing.T) {
+			runTest(t, testName, l.WithContext(context.Background()),
+				Configuration{
+					Kilt:               sidecarEnvConfig,
 					OptIn:              false,
 					RecipeConfig:       "{}",
 					UseRepositoryHints: false,

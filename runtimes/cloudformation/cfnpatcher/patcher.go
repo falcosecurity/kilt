@@ -114,7 +114,7 @@ func postPatchReplace(patched []string, original []string, parallel []*gabs.Cont
 	return value
 }
 
-func postPatchSelect(patched string, previous string, original *gabs.Container)  interface{} {
+func postPatchSelect(patched string, previous string, original *gabs.Container) interface{} {
 	if patched == previous && original != nil {
 		return original
 	}
@@ -135,7 +135,6 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	if err != nil {
 		return fmt.Errorf("could not set Command: %w", err)
 	}
-
 
 	_, err = container.Set(postPatchSelect(patch.Image, cfnInfo.TargetInfo.Image, cfnInfo.Image), "Image")
 	if err != nil {

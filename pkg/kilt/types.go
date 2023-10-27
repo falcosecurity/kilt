@@ -29,6 +29,7 @@ type Build struct {
 	EntryPoint           []string
 	Command              []string
 	EnvironmentVariables map[string]string
+	Capabilities         []string
 
 	Resources []BuildResource
 }

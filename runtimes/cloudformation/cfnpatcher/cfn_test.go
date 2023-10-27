@@ -70,6 +70,7 @@ build {
 			entry_point: ["/kilt/wait"]
 		}
 	]
+	capabilities: ["SYS_PTRACE"]
 }
 `
 
@@ -88,6 +89,7 @@ build {
 			entry_point: ["/kilt/wait"]
 		}
 	]
+	capabilities: ["SYS_PTRACE"]
 }
 `
 
@@ -106,6 +108,7 @@ build {
 			}
 		}
 	]
+	capabilities: ["SYS_PTRACE"]
 }
 `
 

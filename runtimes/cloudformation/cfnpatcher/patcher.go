@@ -206,27 +206,40 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 
 	}
 
-	// We need to add SYS_PTRACE capability to the container
-	if !container.Exists("LinuxParameters") {
-		emptyMap := make(map[string]interface{})
-		_, err = container.Set(emptyMap, "LinuxParameters")
-		if err != nil {
-			return fmt.Errorf("could not add LinuxParameters: %w", err)
+	if len(patch.Capabilities) > 0 {
+		capabilities := make([]interface{}, len(patch.Capabilities))
+		for i, v := range patch.Capabilities {
+			capabilities[i] = v
 		}
-	}
-
-	if !container.Exists("LinuxParameters", "Capabilities") {
-		emptyMap := make(map[string]interface{})
-		_, err = container.Set(emptyMap, "LinuxParameters", "Capabilities")
-		if err != nil {
-			return fmt.Errorf("could not add LinuxParameters.Capabilities: %w", err)
+		// We need to add capabilities to the container
+		if !container.Exists("LinuxParameters") {
+			emptyMap := make(map[string]interface{})
+			_, err = container.Set(emptyMap, "LinuxParameters")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters: %w", err)
+			}
 		}
-	}
 
-	// fargate only supports SYS_PTRACE
-	_, err = container.Set([]string{"SYS_PTRACE"}, "LinuxParameters", "Capabilities", "Add")
-	if err != nil {
-		return fmt.Errorf("could not add LinuxParamaters.Capabilities.Add: %w", err)
+		if !container.Exists("LinuxParameters", "Capabilities") {
+			emptyMap := make(map[string]interface{})
+			_, err = container.Set(emptyMap, "LinuxParameters", "Capabilities")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters.Capabilities: %w", err)
+			}
+		}
+
+		if !container.Exists("LinuxParameters", "Capabilities", "Add") {
+			emptyList := make([]interface{}, 0)
+			_, err = container.Set(emptyList, "LinuxParameters", "Capabilities", "Add")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters.Capabilities.Add: %w", err)
+			}
+		}
+
+		err := container.ArrayConcat(capabilities, "LinuxParameters", "Capabilities", "Add")
+		if err != nil {
+			return fmt.Errorf("could not append to LinuxParameters.Capabilities.Add: %w", err)
+		}
 	}
 
 	return nil

@@ -21,6 +21,11 @@ func extractBuild(config *configuration.Config) (*kilt.Build, error) {
 		b.Command = make([]string, 0)
 	}
 
+	b.Capabilities = config.GetStringList("build.capabilities")
+	if b.Capabilities == nil {
+		b.Capabilities = make([]string, 0)
+	}
+
 	b.EnvironmentVariables = extractToStringMap(config, "build.environment_variables")
 
 	if config.IsArray("build.mount") {

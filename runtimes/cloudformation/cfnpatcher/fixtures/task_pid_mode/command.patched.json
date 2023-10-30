@@ -1,10 +1,4 @@
 {
-  "Parameters": {
-    "soLongAndThanks": {
-      "Default": "ForAllTheFish",
-      "Type": "String"
-    }
-  },
   "Resources": {
     "taskdef": {
       "Properties": {
@@ -17,14 +11,6 @@
               "/kilt/run",
               "--",
               ""
-            ],
-            "Environment": [
-              {
-                "Name": "SO_LONG_AND_THANKS",
-                "Value": {
-                  "Ref": "soLongAndThanks"
-                }
-              }
             ],
             "Image": "busybox",
             "LinuxParameters": {
@@ -47,15 +33,7 @@
               "/kilt/wait"
             ],
             "Image": "KILT:latest",
-            "Name": "KiltImage",
-            "Environment": [
-              {
-                "Name": "SO_LONG_AND_THANKS",
-                "Value": {
-                  "Ref": "soLongAndThanks"
-                }
-              }
-            ]
+            "Name": "KiltImage"
           }
         ],
         "RequiresCompatibilities": [
@@ -70,7 +48,8 @@
             "Key": "kiltinclude",
             "Value": "itisignored"
           }
-        ]
+        ],
+        "PidMode": "task"
       },
       "Type": "AWS::ECS::TaskDefinition"
     }

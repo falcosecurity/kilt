@@ -1,10 +1,4 @@
 {
-  "Parameters": {
-    "soLongAndThanks": {
-      "Default": "ForAllTheFish",
-      "Type": "String"
-    }
-  },
   "Resources": {
     "taskdef": {
       "Properties": {
@@ -20,9 +14,9 @@
             ],
             "Environment": [
               {
-                "Name": "SO_LONG_AND_THANKS",
+                "Name": "NAME",
                 "Value": {
-                  "Ref": "soLongAndThanks"
+                  "Ref": "Parameter"
                 }
               }
             ],
@@ -46,16 +40,20 @@
             "EntryPoint": [
               "/kilt/wait"
             ],
-            "Image": "KILT:latest",
-            "Name": "KiltImage",
             "Environment": [
               {
-                "Name": "SO_LONG_AND_THANKS",
+                "Name": "MEANING_OF_LIFE",
+                "Value": "42"
+              },
+              {
+                "Name": "NAME",
                 "Value": {
-                  "Ref": "soLongAndThanks"
+                  "Ref": "Parameter"
                 }
               }
-            ]
+            ],
+            "Image": "KILT:latest",
+            "Name": "KiltImage"
           }
         ],
         "RequiresCompatibilities": [

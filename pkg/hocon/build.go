@@ -21,6 +21,11 @@ func extractBuild(config *configuration.Config) (*kilt.Build, error) {
 		b.Command = make([]string, 0)
 	}
 
+	b.Capabilities = config.GetStringList("build.capabilities")
+	if b.Capabilities == nil {
+		b.Capabilities = make([]string, 0)
+	}
+
 	b.EnvironmentVariables = extractToStringMap(config, "build.environment_variables")
 
 	if config.IsArray("build.mount") {
@@ -35,6 +40,18 @@ func extractBuild(config *configuration.Config) (*kilt.Build, error) {
 					Image:      mount.GetKey("image").GetString(),
 					Volumes:    mount.GetKey("volumes").GetStringList(),
 					EntryPoint: mount.GetKey("entry_point").GetStringList(),
+				}
+
+				sidecarEnv := mount.GetKey("environment_variables")
+				if sidecarEnv != nil && sidecarEnv.IsObject() {
+					obj := sidecarEnv.GetObject()
+					for k, v := range obj.Items() {
+						keyValue := make(map[string]interface{})
+						keyValue["Name"] = k
+						keyValue["Value"] = v.GetString()
+
+						resource.EnvironmentVariables = append(resource.EnvironmentVariables, keyValue)
+					}
 				}
 
 				if resource.Image == "" || len(resource.Volumes) == 0 || len(resource.EntryPoint) == 0 {

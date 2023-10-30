@@ -73,3 +73,11 @@ func (k *KiltHocon) Runtime(info *kilt.TargetInfo) (*kilt.Runtime, error) {
 	}
 	return extractRuntime(config)
 }
+
+func (k *KiltHocon) Task() (*kilt.Task, error) {
+	config, err := k.prepareFullStringConfig(&kilt.TargetInfo{})
+	if err != nil {
+		return nil, fmt.Errorf("could not assemble full config: %w", err)
+	}
+	return extractTask(config)
+}

@@ -1,10 +1,4 @@
 {
-  "Parameters": {
-    "soLongAndThanks": {
-      "Default": "ForAllTheFish",
-      "Type": "String"
-    }
-  },
   "Resources": {
     "taskdef": {
       "Properties": {
@@ -18,14 +12,6 @@
               "--",
               ""
             ],
-            "Environment": [
-              {
-                "Name": "SO_LONG_AND_THANKS",
-                "Value": {
-                  "Ref": "soLongAndThanks"
-                }
-              }
-            ],
             "Image": "busybox",
             "LinuxParameters": {
               "Capabilities": {
@@ -37,6 +23,9 @@
             "Name": "app",
             "VolumesFrom": [
               {
+                "SourceContainer": "SomeOtherContainer"
+              },
+              {
                 "ReadOnly": true,
                 "SourceContainer": "KiltImage"
               }
@@ -46,30 +35,18 @@
             "EntryPoint": [
               "/kilt/wait"
             ],
-            "Image": "KILT:latest",
-            "Name": "KiltImage",
             "Environment": [
               {
-                "Name": "SO_LONG_AND_THANKS",
-                "Value": {
-                  "Ref": "soLongAndThanks"
-                }
+                "Name": "MEANING_OF_LIFE",
+                "Value": "42"
               }
-            ]
+            ],
+            "Image": "KILT:latest",
+            "Name": "KiltImage"
           }
         ],
         "RequiresCompatibilities": [
           "FARGATE"
-        ],
-        "Tags": [
-          {
-            "Key": "antani",
-            "Value": "sbiribuda"
-          },
-          {
-            "Key": "kiltinclude",
-            "Value": "itisignored"
-          }
         ]
       },
       "Type": "AWS::ECS::TaskDefinition"

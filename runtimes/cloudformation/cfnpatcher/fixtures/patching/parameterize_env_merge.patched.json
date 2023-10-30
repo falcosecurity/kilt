@@ -57,7 +57,21 @@
               "/kilt/wait"
             ],
             "Image": "KILT:latest",
-            "Name": "KiltImage"
+            "Name": "KiltImage",
+            "Environment": [
+              {
+                "Name": "NAME",
+                "Value": {
+                  "Ref": "Parameter"
+                }
+              },
+              {
+                "Name": "SO_LONG_AND_THANKS",
+                "Value": {
+                  "Ref": "soLongAndThanks"
+                }
+              }
+            ]
           }
         ],
         "RequiresCompatibilities": [

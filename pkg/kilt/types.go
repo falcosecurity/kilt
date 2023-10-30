@@ -17,10 +17,11 @@ type TargetInfo struct {
 }
 
 type BuildResource struct {
-	Name       string
-	Image      string
-	Volumes    []string
-	EntryPoint []string
+	Name                 string
+	Image                string
+	Volumes              []string
+	EntryPoint           []string
+	EnvironmentVariables []map[string]interface{}
 }
 
 type Build struct {
@@ -28,8 +29,13 @@ type Build struct {
 	EntryPoint           []string
 	Command              []string
 	EnvironmentVariables map[string]string
+	Capabilities         []string
 
 	Resources []BuildResource
+}
+
+type Task struct {
+	PidMode string // the only value is `task` right now
 }
 
 type RuntimeUpload struct {
@@ -68,4 +74,5 @@ type Payload struct {
 type LanguageInterface interface {
 	Build(info *TargetInfo) (*Build, error)
 	Runtime(info *TargetInfo) (*Runtime, error)
+	Task() (*Task, error)
 }

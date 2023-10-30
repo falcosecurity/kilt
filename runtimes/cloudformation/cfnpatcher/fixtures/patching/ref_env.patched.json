@@ -38,6 +38,12 @@
             "EntryPoint": [
               "/kilt/wait"
             ],
+            "Environment": [{
+              "Name": "NAME",
+              "Value": {
+                "Ref": "Parameter"
+              }
+            }],
             "Image": "KILT:latest",
             "Name": "KiltImage"
           }

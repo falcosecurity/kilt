@@ -17,3 +17,7 @@ func (k *Kilt) Build(info *TargetInfo) (*Build, error) {
 func (k *Kilt) Runtime(info *TargetInfo) (*Runtime, error) {
 	return k.definition.Runtime(info)
 }
+
+func (k *Kilt) Task() (*Task, error) {
+	return k.definition.Task()
+}

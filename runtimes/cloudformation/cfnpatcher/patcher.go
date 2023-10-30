@@ -44,6 +44,26 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	successes := 0
 	containers := make(map[string]kilt.BuildResource)
 	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, configuration.RecipeConfig)
+
+	taskPatch, err := k.Task()
+	if err != nil {
+		return nil, fmt.Errorf("could not get task definition patch: %w", err)
+	}
+
+	if taskPatch.PidMode != "" {
+		if !resource.Exists("Properties") {
+			_, err := resource.Set(map[string]interface{}{}, "Properties")
+			if err != nil {
+				return nil, fmt.Errorf("could not add properties to task definition: %w", err)
+			}
+		}
+
+		_, err = resource.Set(taskPatch.PidMode, "Properties", "PidMode")
+		if err != nil {
+			return nil, fmt.Errorf("could not set PidMode: %w", err)
+		}
+	}
+
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(ctx, resource, name, container, configuration)
@@ -65,6 +85,34 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 			}
 
 			for _, appendResource := range patch.Resources {
+				existingSidecarVars := make(map[string]struct{})
+
+				for _, kv := range appendResource.EnvironmentVariables {
+					existingSidecarVars[kv["Name"].(string)] = struct{}{}
+				}
+
+				for k, v := range patch.EnvironmentVariables {
+					if _, ok := existingSidecarVars[k]; ok {
+						continue
+					}
+
+					keyValue := make(map[string]interface{})
+					keyValue["Name"] = k
+
+					if _, ok := info.EnvironmentVariables[k]; !ok && configuration.ParameterizeEnvars {
+						parameterRef := gabs.Container{}
+						parameterRef.Set(getParameterName(k), "Ref")
+						keyValue["Value"] = &parameterRef
+					} else {
+						keyValue["Value"] = v
+					}
+
+					if v == info.TargetInfo.EnvironmentVariables[k] && info.EnvironmentVariables[k] != nil {
+						keyValue["Value"] = info.EnvironmentVariables[k]
+					}
+
+					appendResource.EnvironmentVariables = append(appendResource.EnvironmentVariables, keyValue)
+				}
 				containers[appendResource.Name] = appendResource
 			}
 		}
@@ -96,7 +144,7 @@ func postPatchReplace(patched []string, original []string, parallel []*gabs.Cont
 	return value
 }
 
-func postPatchSelect(patched string, previous string, original *gabs.Container)  interface{} {
+func postPatchSelect(patched string, previous string, original *gabs.Container) interface{} {
 	if patched == previous && original != nil {
 		return original
 	}
@@ -117,7 +165,6 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 	if err != nil {
 		return fmt.Errorf("could not set Command: %w", err)
 	}
-
 
 	_, err = container.Set(postPatchSelect(patch.Image, cfnInfo.TargetInfo.Image, cfnInfo.Image), "Image")
 	if err != nil {
@@ -179,27 +226,40 @@ func applyContainerDefinitionPatch(ctx context.Context, container *gabs.Containe
 
 	}
 
-	// We need to add SYS_PTRACE capability to the container
-	if !container.Exists("LinuxParameters") {
-		emptyMap := make(map[string]interface{})
-		_, err = container.Set(emptyMap, "LinuxParameters")
-		if err != nil {
-			return fmt.Errorf("could not add LinuxParameters: %w", err)
+	if len(patch.Capabilities) > 0 {
+		capabilities := make([]interface{}, len(patch.Capabilities))
+		for i, v := range patch.Capabilities {
+			capabilities[i] = v
 		}
-	}
-
-	if !container.Exists("LinuxParameters", "Capabilities") {
-		emptyMap := make(map[string]interface{})
-		_, err = container.Set(emptyMap, "LinuxParameters", "Capabilities")
-		if err != nil {
-			return fmt.Errorf("could not add LinuxParameters.Capabilities: %w", err)
+		// We need to add capabilities to the container
+		if !container.Exists("LinuxParameters") {
+			emptyMap := make(map[string]interface{})
+			_, err = container.Set(emptyMap, "LinuxParameters")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters: %w", err)
+			}
 		}
-	}
 
-	// fargate only supports SYS_PTRACE
-	_, err = container.Set([]string{"SYS_PTRACE"}, "LinuxParameters", "Capabilities", "Add")
-	if err != nil {
-		return fmt.Errorf("could not add LinuxParamaters.Capabilities.Add: %w", err)
+		if !container.Exists("LinuxParameters", "Capabilities") {
+			emptyMap := make(map[string]interface{})
+			_, err = container.Set(emptyMap, "LinuxParameters", "Capabilities")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters.Capabilities: %w", err)
+			}
+		}
+
+		if !container.Exists("LinuxParameters", "Capabilities", "Add") {
+			emptyList := make([]interface{}, 0)
+			_, err = container.Set(emptyList, "LinuxParameters", "Capabilities", "Add")
+			if err != nil {
+				return fmt.Errorf("could not add LinuxParameters.Capabilities.Add: %w", err)
+			}
+		}
+
+		err := container.ArrayConcat(capabilities, "LinuxParameters", "Capabilities", "Add")
+		if err != nil {
+			return fmt.Errorf("could not append to LinuxParameters.Capabilities.Add: %w", err)
+		}
 	}
 
 	return nil
@@ -211,6 +271,9 @@ func appendContainers(resource *gabs.Container, containers map[string]kilt.Build
 			"Name":       inject.Name,
 			"Image":      inject.Image,
 			"EntryPoint": inject.EntryPoint,
+		}
+		if len(inject.EnvironmentVariables) > 0 {
+			appended["Environment"] = inject.EnvironmentVariables
 		}
 		if len(imageAuth) > 0 {
 			appended["RepositoryCredentials"] = map[string]interface{}{

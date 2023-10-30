@@ -44,6 +44,26 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	successes := 0
 	containers := make(map[string]kilt.BuildResource)
 	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, configuration.RecipeConfig)
+
+	taskPatch, err := k.Task()
+	if err != nil {
+		return nil, fmt.Errorf("could not get task definition patch: %w", err)
+	}
+
+	if taskPatch.PidMode != "" {
+		if !resource.Exists("Properties") {
+			_, err := resource.Set(map[string]interface{}{}, "Properties")
+			if err != nil {
+				return nil, fmt.Errorf("could not add properties to task definition: %w", err)
+			}
+		}
+
+		_, err = resource.Set(taskPatch.PidMode, "Properties", "PidMode")
+		if err != nil {
+			return nil, fmt.Errorf("could not set PidMode: %w", err)
+		}
+	}
+
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
 			info := extractContainerInfo(ctx, resource, name, container, configuration)

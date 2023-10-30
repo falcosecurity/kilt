@@ -58,6 +58,10 @@ var sidecarEnvTests = [...]string{
 	"sidecar_env/volumes_from",
 }
 
+var taskPidModeTests = [...]string{
+	"task_pid_mode/command",
+}
+
 const defaultConfig = `
 build {
 	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
@@ -109,6 +113,25 @@ build {
 		}
 	]
 	capabilities: ["SYS_PTRACE"]
+}
+`
+
+const taskPidModeConfig = `
+build {
+	entry_point: ["/kilt/run", "--", ${?original.metadata.captured_tag}]
+	command: [] ${?original.entry_point} ${?original.command}
+	mount: [
+		{
+			name: "KiltImage"
+			image: "KILT:latest"
+			volumes: ["/kilt"]
+			entry_point: ["/kilt/wait"]
+		}
+	]
+	capabilities: ["SYS_PTRACE"]
+}
+task {
+	pid_mode: "task"
 }
 `
 
@@ -189,6 +212,22 @@ func TestPatchingSidecarEnv(t *testing.T) {
 			runTest(t, testName, l.WithContext(context.Background()),
 				Configuration{
 					Kilt:               sidecarEnvConfig,
+					OptIn:              false,
+					RecipeConfig:       "{}",
+					UseRepositoryHints: false,
+				})
+		})
+	}
+}
+
+func TestPatchingTask(t *testing.T) {
+	l := log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
+
+	for _, testName := range taskPidModeTests {
+		t.Run(testName, func(t *testing.T) {
+			runTest(t, testName, l.WithContext(context.Background()),
+				Configuration{
+					Kilt:               taskPidModeConfig,
 					OptIn:              false,
 					RecipeConfig:       "{}",
 					UseRepositoryHints: false,

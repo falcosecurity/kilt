@@ -34,6 +34,10 @@ type Build struct {
 	Resources []BuildResource
 }
 
+type Task struct {
+	PidMode string // the only value is `task` right now
+}
+
 type RuntimeUpload struct {
 	Payload     *Payload
 	Destination string
@@ -70,4 +74,5 @@ type Payload struct {
 type LanguageInterface interface {
 	Build(info *TargetInfo) (*Build, error)
 	Runtime(info *TargetInfo) (*Runtime, error)
+	Task() (*Task, error)
 }

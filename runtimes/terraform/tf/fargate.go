@@ -62,7 +62,8 @@ func patchFargateTaskDefinition(ctx context.Context, containerDefinitions *types
 		}
 	}()
 
-	patchedBytes, err := cfnpatcher.Patch(ctx, kiltConfig, patchedStack)
+	templateParameters := make([]byte, 0)
+	patchedBytes, err := cfnpatcher.Patch(ctx, kiltConfig, patchedStack, templateParameters)
 	if err != nil {
 		return types.String{Unknown: true}, err
 	}

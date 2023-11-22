@@ -37,7 +37,8 @@ func main() {
 	ctx := context.Background()
 	l := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	ctx = l.WithContext(ctx)
-	result, err := cfnpatcher.Patch(ctx, config, template)
+	templateParameters := make([]byte, 0)
+	result, err := cfnpatcher.Patch(ctx, config, template, templateParameters)
 
 	if err != nil {
 		panic(fmt.Errorf("could not patch template: %w", err))

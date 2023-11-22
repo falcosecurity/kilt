@@ -66,7 +66,7 @@ func extractHintsFromTags(tags map[string]string) *InstrumentationHints {
 	}
 }
 
-func Patch(ctx context.Context, configuration *Configuration, fragment []byte) ([]byte, error) {
+func Patch(ctx context.Context, configuration *Configuration, fragment, templateParameters []byte) ([]byte, error) {
 	l := log.Ctx(ctx)
 	template, err := gabs.ParseJSON(fragment)
 	if err != nil {
@@ -77,6 +77,15 @@ func Patch(ctx context.Context, configuration *Configuration, fragment []byte) (
 	if configuration.ParameterizeEnvars {
 		l.Info().Msg("parameterizing recipe envars")
 		applyParametersPatch(ctx, template, configuration)
+	}
+
+	var parameters *gabs.Container
+	if len(templateParameters) > 0 {
+		parameters, err = gabs.ParseJSON(templateParameters)
+		if err != nil {
+			l.Error().Err(err).Msg("failed to parse input templateParameters")
+			return nil, err
+		}
 	}
 
 	for name, resource := range template.S("Resources").ChildrenMap() {
@@ -94,7 +103,7 @@ func Patch(ctx context.Context, configuration *Configuration, fragment []byte) (
 				continue
 			}
 			hints := extractHintsFromTags(optTags)
-			_, err = applyTaskDefinitionPatch(ctx, name, resource, configuration, hints)
+			_, err = applyTaskDefinitionPatch(ctx, name, resource, parameters, configuration, hints)
 			if err != nil {
 				l.Error().Err(err).Str("resource", name).Msgf("could not patch resource")
 			}

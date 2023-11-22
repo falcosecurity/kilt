@@ -38,7 +38,7 @@ func applyParametersPatch(ctx context.Context, template *gabs.Container, configu
 	return template, nil
 }
 
-func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.Container, configuration *Configuration, hints *InstrumentationHints) (*gabs.Container, error) {
+func applyTaskDefinitionPatch(ctx context.Context, name string, resource, parameters *gabs.Container, configuration *Configuration, hints *InstrumentationHints) (*gabs.Container, error) {
 	l := log.Ctx(ctx)
 
 	successes := 0
@@ -46,7 +46,7 @@ func applyTaskDefinitionPatch(ctx context.Context, name string, resource *gabs.C
 	k := kiltapi.NewKiltFromHoconWithConfig(configuration.Kilt, configuration.RecipeConfig)
 	if resource.Exists("Properties", "ContainerDefinitions") {
 		for _, container := range resource.S("Properties", "ContainerDefinitions").Children() {
-			info := extractContainerInfo(ctx, resource, name, container, configuration)
+			info := extractContainerInfo(ctx, resource, name, container, parameters, configuration)
 			l.Info().Msgf("extracted info for container: %+v %+v", info.TargetInfo, info)
 			if shouldSkip(info.TargetInfo, configuration, hints) {
 				l.Info().Msgf("skipping container due to hints in tags")

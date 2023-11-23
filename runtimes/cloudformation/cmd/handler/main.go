@@ -16,11 +16,12 @@ import (
 )
 
 type MacroInput struct {
-	Region      string          `json:"region"`
-	AccountID   string          `json:"accountId"`
-	RequestID   string          `json:"requestId"`
-	TransformID string          `json:"transformId"`
-	Fragment    json.RawMessage `json:"fragment"`
+	Region      string                      `json:"region"`
+	AccountID   string                      `json:"accountId"`
+	RequestID   string                      `json:"requestId"`
+	TransformID string                      `json:"transformId"`
+	TemplateParameterValues json.RawMessage `json:"templateParameterValues"`
+	Fragment    json.RawMessage             `json:"fragment"`
 }
 
 type MacroOutput struct {
@@ -37,7 +38,7 @@ func HandleRequest(configuration *cfnpatcher.Configuration, ctx context.Context,
 		Str("transformId", event.TransformID).
 		Logger()
 	loggerCtx := l.WithContext(ctx)
-	result, err := cfnpatcher.Patch(loggerCtx, configuration, event.Fragment)
+	result, err := cfnpatcher.Patch(loggerCtx, configuration, event.Fragment, event.TemplateParameterValues)
 	if err != nil {
 		return MacroOutput{event.RequestID, "failure", result}, err
 	}
@@ -57,7 +58,9 @@ func PatchLocalFile(configuration *cfnpatcher.Configuration, ctx context.Context
 		return nil, err
 	}
 
-	result, err := cfnpatcher.Patch(loggerCtx, configuration, inputData)
+	// TODO look for defaults, cannot do better here
+	templateParameters := make([]byte, 0)
+	result, err := cfnpatcher.Patch(loggerCtx, configuration, inputData, templateParameters)
 	if err != nil {
 		l.Error().Err(err).Msg("failed to patch local file")
 		return nil, err

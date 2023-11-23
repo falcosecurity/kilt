@@ -29,19 +29,19 @@ func GetValueFromTemplate(what *gabs.Container) (string, *gabs.Container) {
 		result = v
 		fallback = nil
 	default:
-		fallback = what
 		result = "placeholder: " + what.String()
+		fallback = what
 	}
 	return result, fallback
 }
 
-func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName string, container *gabs.Container, configuration *Configuration) *TemplateInfo {
+func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName string, container, parameters *gabs.Container, configuration *Configuration) *TemplateInfo {
 	cfnInfo := new(TemplateInfo)
 	info := new(kilt.TargetInfo)
 	cfnInfo.TargetInfo = info
 	l := log.Ctx(ctx)
 
-	info.ContainerName, cfnInfo.Image = GetValueFromTemplate(container.S("Name"))
+	info.ContainerName, cfnInfo.Name = GetValueFromTemplate(container.S("Name"))
 	info.ContainerGroupName = groupName
 	info.EnvironmentVariables = make(map[string]string)
 	cfnInfo.EnvironmentVariables = make(map[string]*gabs.Container)
@@ -49,6 +49,22 @@ func extractContainerInfo(ctx context.Context, group *gabs.Container, groupName 
 
 	if container.Exists("Image") {
 		info.Image, cfnInfo.Image = GetValueFromTemplate(container.S("Image"))
+		if cfnInfo.Image != nil {
+			l.Info().Str("image", info.Image).Msg("retrieving image from template parameters")
+
+			parameterName, ok := cfnInfo.Image.S("Ref").Data().(string)
+			if ok {
+				image, ok := parameters.S(parameterName).Data().(string)
+				if ok {
+					l.Info().Str("image", info.Image).Msgf("found image %s", image)
+					info.Image = image
+				} else {
+					l.Warn().Str("image", info.Image).Msg("could not resolve the image parameter")
+				}
+			} else {
+				l.Warn().Str("image", info.Image).Msg("could not find the name of the image parameter")
+			}
+		}
 
 		os.Setenv("HOME", "/tmp") // crane requires $HOME variable
 		repoInfo, err := GetConfigFromRepository(info.Image)

@@ -90,7 +90,8 @@ func runTest(t *testing.T, name string, context context.Context, config Configur
 	if err != nil {
 		t.Fatalf("cannot find fixtures/%s.json", name)
 	}
-	result, err := Patch(context, &config, fragment)
+	templateParameters := make([]byte, 0)
+	result, err := Patch(context, &config, fragment, templateParameters)
 	if err != nil {
 		t.Fatalf("error patching: %s", err.Error())
 	}

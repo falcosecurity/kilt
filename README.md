@@ -1,5 +1,5 @@
 # Kilt
-[![Falco Ecosystem Repository](https://github.com/falcosecurity/evolution/blob/main/repos/badges/falco-ecosystem-blue.svg)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#ecosystem-scope) [![Incubating](https://img.shields.io/badge/status-incubating-orange?style=for-the-badge)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#incubating)
+[![Falco Ecosystem Repository](https://github.com/falcosecurity/evolution/blob/main/repos/badges/falco-ecosystem-blue.svg)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#ecosystem-scope) [![Deprecated](https://img.shields.io/badge/status-deprecated-inactive?style=for-the-badge)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#deprecated)
 
 Kilt is a definition on how to include additional software inside containers. It was created to run falco in userspace
 along other software. It leverages different runtimes to perform modifications to the container
